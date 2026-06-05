@@ -5,14 +5,14 @@ interface StatusBadgeProps {
 export function StatusBadge({ liberado }: StatusBadgeProps) {
   if (liberado) {
     return (
-      <span className="inline-flex items-center rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success">
+      <span className="rounded-full bg-success/10 px-2 py-1 text-[10px] font-bold uppercase tracking-tighter text-success">
         Liberado
       </span>
     )
   }
 
   return (
-    <span className="inline-flex items-center rounded-full bg-warning/10 px-2.5 py-0.5 text-xs font-medium text-warning">
+    <span className="rounded-full bg-text-secondary/10 px-2 py-1 text-[10px] font-bold uppercase tracking-tighter text-text-secondary">
       Pendente
     </span>
   )
