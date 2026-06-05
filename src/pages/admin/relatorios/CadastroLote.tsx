@@ -5,8 +5,10 @@ import { listarAvaliacoes } from '@/features/avaliacoes/api'
 import { listarSeries } from '@/features/series/api'
 import { encryptLink } from '@/shared/lib/crypto'
 import type { Municipio, Avaliacao, Serie } from '@/shared/types'
-import { Button } from '@/shared/ui/Button'
+import { Icon } from '@/shared/ui/Icon'
 import { useToast } from '@/shared/ui/Toast'
+import { SeriesRow } from '@/shared/ui/SeriesRow'
+import { SelectionPanel } from '@/shared/ui/SelectionPanel'
 
 interface CadastroLoteProps {
   onClose: () => void
@@ -48,6 +50,12 @@ export function CadastroLote({ onClose, onSalvo }: CadastroLoteProps) {
     setItens(prev => prev.map((item, i) => i === idx ? { ...item, [campo]: valor } : item))
   }
 
+  function limpar() {
+    setMunicipioId('')
+    setAvaliacaoId('')
+    setItens([])
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (itens.length === 0) return
@@ -74,62 +82,105 @@ export function CadastroLote({ onClose, onSalvo }: CadastroLoteProps) {
   }
 
   return (
-    <div className="mb-stack-lg rounded-xl border border-border-technical bg-surface p-stack-lg shadow-card">
-      <h2 className="mb-stack-md text-headline-sm font-semibold text-text-primary">Cadastro em Lote</h2>
-      <form onSubmit={handleSubmit} className="space-y-stack-md">
-        <div className="flex flex-wrap gap-gutter">
-          <div className="w-64">
-            <label className="block text-label-sm font-medium text-text-secondary">Município</label>
-            <select required value={municipioId} onChange={e => setMunicipioId(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-border-technical bg-surface px-3 py-3 text-body-sm text-text-primary focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
-              <option value="">Selecione</option>
-              {municipios.map(m => <option key={m.id} value={m.id}>{m.nome}</option>)}
-            </select>
-          </div>
-          <div className="w-64">
-            <label className="block text-label-sm font-medium text-text-secondary">Avaliação</label>
-            <select required value={avaliacaoId} onChange={e => setAvaliacaoId(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-border-technical bg-surface px-3 py-3 text-body-sm text-text-primary focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
-              <option value="">Selecione</option>
-              {avaliacoes.map(a => <option key={a.id} value={a.id}>{a.nome} ({a.ano})</option>)}
-            </select>
-          </div>
+    <div className="p-stack-lg mx-auto" style={{ maxWidth: 'var(--spacing-container-max)' }}>
+      <div className="mb-10 flex items-end justify-between">
+        <div>
+          <h2 className="mb-2 text-headline-lg text-primary">Cadastro em Lote</h2>
+          <p className="max-w-2xl text-body-md text-text-secondary">
+            Vincule múltiplos links de relatórios do Power BI a diferentes séries de um município simultaneamente.
+          </p>
         </div>
-
-        <div className="space-y-stack-sm">
-          <div className="flex items-center justify-between">
-            <h3 className="text-label-sm font-medium text-text-secondary">Séries e Links</h3>
-            <Button type="button" variant="secondary" onClick={adicionarItem}>+ Adicionar Série</Button>
-          </div>
-          {itens.map((item, idx) => (
-            <div key={idx} className="flex items-end gap-stack-md">
-              <div className="w-48">
-                <label className="block text-xs font-medium text-text-secondary">Série</label>
-                <select required value={item.serieId} onChange={e => atualizarItem(idx, 'serieId', e.target.value)}
-                  className="mt-1 block w-full rounded-lg border border-border-technical bg-surface px-3 py-3 text-body-sm text-text-primary focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
-                  <option value="">Selecione</option>
-                  {series.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
-                </select>
-              </div>
-              <div className="flex-1">
-                <label className="block text-xs font-medium text-text-secondary">Link Power BI</label>
-                <input type="url" required value={item.link} onChange={e => atualizarItem(idx, 'link', e.target.value)}
-                  className="mt-1 block w-full rounded-lg border border-border-technical bg-surface px-3 py-3 text-body-sm text-text-primary focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary"
-                  placeholder="https://app.powerbi.com/..." />
-              </div>
-              <Button type="button" variant="danger" onClick={() => removerItem(idx)}>Remover</Button>
-            </div>
-          ))}
-          {itens.length === 0 && (
-            <p className="text-body-sm text-text-secondary">Clique em "Adicionar Série" para começar.</p>
-          )}
-        </div>
-
-        <div className="flex gap-stack-sm">
-          <Button type="submit" loading={saving} disabled={itens.length === 0}>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={limpar}
+            className="rounded-lg border border-border-technical px-6 py-2.5 text-label-md text-primary transition-all hover:bg-surface-container-low"
+          >
+            Limpar Formulário
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg border border-border-technical px-6 py-2.5 text-label-md text-text-secondary transition-all hover:bg-surface-container-low"
+          >
+            Voltar
+          </button>
+          <button
+            type="submit"
+            onClick={handleSubmit}
+            disabled={itens.length === 0 || saving}
+            className="flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-label-md text-on-primary shadow-md transition-all hover:opacity-90 disabled:opacity-50"
+          >
+            <Icon name="save" />
             Salvar Todos ({itens.length})
-          </Button>
-          <Button variant="secondary" type="button" onClick={onClose}>Cancelar</Button>
+          </button>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        <div className="grid grid-cols-12 gap-gutter">
+          <SelectionPanel
+            municipios={municipios}
+            avaliacoes={avaliacoes}
+            municipioId={municipioId}
+            avaliacaoId={avaliacaoId}
+            onMunicipioChange={setMunicipioId}
+            onAvaliacaoChange={setAvaliacaoId}
+          />
+
+          <div className="col-span-12 lg:col-span-8">
+            <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border-technical bg-surface shadow-card">
+              <div className="flex items-center justify-between border-b border-border-technical bg-surface-container-lowest p-6">
+                <div className="flex items-center gap-3">
+                  <Icon name="list_alt" className="text-primary" />
+                  <h3 className="text-headline-sm text-primary">Séries e Vínculos de Relatórios</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={adicionarItem}
+                  className="flex items-center gap-2 rounded-lg px-4 py-2 text-label-md text-primary transition-all hover:bg-primary-fixed-dim/20"
+                >
+                  <Icon name="add" />
+                  Adicionar Série
+                </button>
+              </div>
+
+              {itens.length > 0 ? (
+                <div className="max-h-[600px] space-y-stack-md overflow-y-auto bg-background/50 p-6">
+                  {itens.map((item, idx) => (
+                    <SeriesRow
+                      key={idx}
+                      idx={idx}
+                      serieId={item.serieId}
+                      link={item.link}
+                      series={series}
+                      onUpdate={atualizarItem}
+                      onRemove={removerItem}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-1 flex-col items-center justify-center p-12 text-center">
+                  <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-surface-container">
+                    <Icon name="add_task" className="text-5xl text-text-secondary" />
+                  </div>
+                  <h4 className="mb-2 text-headline-sm text-primary">Nenhuma série adicionada</h4>
+                  <p className="mb-6 text-body-sm text-text-secondary">
+                    Clique no botão acima para começar a cadastrar os links das séries.
+                  </p>
+                </div>
+              )}
+
+              <div className="border-t border-border-technical bg-surface-container-lowest p-6">
+                <div className="flex items-center gap-4 rounded-lg border border-border-technical/50 bg-surface-container-low p-4 text-text-secondary">
+                  <Icon name="warning" className="text-warning" />
+                  <p className="text-body-sm">
+                    Certifique-se de salvar todas as alterações antes de sair. As alterações não salvas serão perdidas.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </form>
     </div>
