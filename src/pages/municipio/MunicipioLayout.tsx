@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useNavigate, Link } from 'react-router-dom'
 import { signOut } from 'firebase/auth'
 import { useAuth } from '@/app/providers/AuthProvider'
 import { auth } from '@/shared/lib/firebase'
@@ -20,7 +20,7 @@ export function MunicipioLayout() {
           <span className="text-xl font-bold text-gray-900">LinkResults</span>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-700">{profile?.nome}</span>
+          <Link to="/perfil" className="text-sm text-blue-600 hover:text-blue-700">{profile?.nome}</Link>
           <Button variant="secondary" onClick={handleLogout}>Sair</Button>
         </div>
       </header>

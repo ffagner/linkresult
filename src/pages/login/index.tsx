@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/shared/lib/firebase'
 
@@ -69,6 +69,12 @@ export function LoginPage() {
           {error && (
             <p className="text-sm text-red-600">{error}</p>
           )}
+
+          <div className="text-right">
+            <Link to="/recuperar-senha" className="text-sm text-blue-600 hover:text-blue-700">
+              Esqueci minha senha
+            </Link>
+          </div>
 
           <button
             type="submit"

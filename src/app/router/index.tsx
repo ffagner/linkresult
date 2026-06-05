@@ -1,6 +1,10 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { PrivateRoute } from './PrivateRoute'
 import { LoginPage } from '@/pages/login'
+import { RecuperarSenhaPage } from '@/pages/RecuperarSenha'
+import { PerfilPage } from '@/pages/Perfil'
+import { NotFoundPage } from '@/pages/NotFound'
+import { AcessoNegadoPage } from '@/pages/AcessoNegado'
 import { AdminLayout } from '@/pages/admin/AdminLayout'
 import { AdminDashboard } from '@/pages/admin/Dashboard'
 import { MunicipiosListagem } from '@/pages/admin/municipios/Listagem'
@@ -21,6 +25,10 @@ export function AppRouter() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/recuperar-senha" element={<RecuperarSenhaPage />} />
+      <Route path="/acesso-negado" element={<AcessoNegadoPage />} />
+
+      <Route path="/perfil" element={<PrivateRoute allowedRoles={['admin', 'pedagogico', 'municipio']}><PerfilPage /></PrivateRoute>} />
 
       <Route
         path="/admin"
@@ -65,7 +73,7 @@ export function AppRouter() {
       </Route>
 
       <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="*" element={<div>Página não encontrada</div>} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
 }
