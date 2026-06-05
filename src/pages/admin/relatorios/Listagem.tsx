@@ -50,9 +50,9 @@ export function RelatoriosListagem() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-on-surface">Relatórios</h1>
-        <div className="flex gap-2">
+      <div className="mb-stack-lg flex items-center justify-between">
+        <h1 className="text-headline-lg text-text-primary">Relatórios</h1>
+        <div className="flex gap-stack-sm">
           <Button variant="secondary" onClick={() => { setShowLote(true); setShowForm(false) }}>
             Cadastro em Lote
           </Button>

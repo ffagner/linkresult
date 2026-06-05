@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/shared/lib/firebase'
+import { Button } from '@/shared/ui/Button'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -76,13 +77,9 @@ export function LoginPage() {
             </Link>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-primary-container px-gutter py-stack-md text-body-sm font-medium text-white hover:bg-primary disabled:opacity-50"
-          >
+          <Button type="submit" loading={loading} className="w-full">
             {loading ? 'Entrando...' : 'Entrar'}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

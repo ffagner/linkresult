@@ -52,8 +52,8 @@ export function UsuariosListagem() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-on-surface">Usuários</h1>
+      <div className="mb-stack-lg flex items-center justify-between">
+        <h1 className="text-headline-lg text-text-primary">Usuários</h1>
         <Button onClick={() => { setEditing(null); setShowForm(true) }}>+ Novo Usuário</Button>
       </div>
 
