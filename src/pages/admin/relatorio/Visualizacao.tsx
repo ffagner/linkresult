@@ -35,19 +35,19 @@ export function RelatorioVisualizacao() {
   }, [id])
 
   if (loading) return <Spinner />
-  if (error) return <div className="p-6 text-red-600">{error}</div>
+  if (error) return <div className="p-stack-lg text-red-600">{error}</div>
   if (!relatorio) return null
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-border-technical bg-surface px-6 py-3">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between border-b border-border-technical bg-surface px-gutter py-stack-md">
+        <div className="flex items-center gap-gutter">
           <Link to="/admin/relatorios">
             <Button variant="secondary">← Voltar</Button>
           </Link>
           <div>
-            <p className="text-sm text-text-secondary">Visualizando Relatório</p>
-            <p className="text-sm font-medium text-on-surface">
+            <p className="text-body-sm text-text-secondary">Visualizando Relatório</p>
+            <p className="text-body-sm font-medium text-text-primary">
               {relatorio.municipioId} — {relatorio.avaliacaoId} — {relatorio.serieId}
             </p>
           </div>

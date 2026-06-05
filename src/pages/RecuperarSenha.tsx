@@ -25,38 +25,38 @@ export function RecuperarSenhaPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm rounded-xl bg-surface p-8 card-shadow">
+    <div className="flex min-h-screen items-center justify-center bg-background px-gutter">
+      <div className="w-full max-w-sm rounded-xl bg-surface p-8 shadow-card">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-on-surface">Recuperar Senha</h1>
-          <p className="mt-1 text-sm text-text-secondary">LinkResults — Tendência Consultoria Educacional</p>
+          <h1 className="text-headline-lg font-bold text-text-primary">Recuperar Senha</h1>
+          <p className="mt-1 text-body-sm text-text-secondary">LinkResults — Tendência Consultoria Educacional</p>
         </div>
 
         {sent ? (
           <div className="text-center">
-            <p className="mb-4 text-sm text-success">Email de recuperação enviado! Verifique sua caixa de entrada.</p>
+            <p className="mb-stack-md text-body-sm text-success">Email de recuperação enviado! Verifique sua caixa de entrada.</p>
             <Link to="/login">
               <Button>Voltar ao login</Button>
             </Link>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-stack-md">
             <div>
-              <label className="block text-sm font-medium text-on-surface-variant">Email</label>
+              <label className="block text-label-sm font-medium text-text-secondary">Email</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary"
+                className="mt-1 block w-full rounded-lg border border-border-technical bg-surface px-3 py-3 text-body-sm text-text-primary focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary"
                 placeholder="seu@email.com"
               />
             </div>
-            {error && <p className="text-sm text-error">{error}</p>}
+            {error && <p className="text-body-sm text-error">{error}</p>}
             <Button type="submit" loading={loading} className="w-full">
               Enviar link de recuperação
             </Button>
-            <p className="text-center text-sm">
+            <p className="text-center text-body-sm">
               <Link to="/login" className="text-secondary hover:text-primary">Voltar ao login</Link>
             </p>
           </form>

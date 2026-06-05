@@ -45,30 +45,30 @@ export function Formulario({ item, onClose, onSalvo }: FormularioProps) {
   }
 
   return (
-    <div className="mb-6 rounded-lg border border-border-technical bg-surface p-6 card-shadow">
-      <h2 className="mb-4 text-lg font-semibold text-on-surface">{item ? 'Editar' : 'Novo'} Usuário</h2>
-      <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-4">
+    <div className="mb-stack-lg rounded-xl border border-border-technical bg-surface p-stack-lg shadow-card">
+      <h2 className="mb-stack-md text-headline-sm font-semibold text-text-primary">{item ? 'Editar' : 'Novo'} Usuário</h2>
+      <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-gutter">
         <div className="w-64">
-          <label className="block text-sm font-medium text-on-surface-variant">Nome</label>
+          <label className="block text-label-sm font-medium text-text-secondary">Nome</label>
           <input type="text" required value={nome} onChange={e => setNome(e.target.value)}
-            className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary" />
+            className="mt-1 block w-full rounded-lg border border-border-technical bg-surface px-3 py-3 text-body-sm text-text-primary focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary" />
         </div>
         <div className="w-64">
-          <label className="block text-sm font-medium text-on-surface-variant">Email</label>
+          <label className="block text-label-sm font-medium text-text-secondary">Email</label>
           <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
-            className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary" />
+            className="mt-1 block w-full rounded-lg border border-border-technical bg-surface px-3 py-3 text-body-sm text-text-primary focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary" />
         </div>
         {!item && (
           <div className="w-48">
-            <label className="block text-sm font-medium text-on-surface-variant">Senha</label>
+            <label className="block text-label-sm font-medium text-text-secondary">Senha</label>
             <input type="password" required value={senha} onChange={e => setSenha(e.target.value)}
-              className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary" />
+              className="mt-1 block w-full rounded-lg border border-border-technical bg-surface px-3 py-3 text-body-sm text-text-primary focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary" />
           </div>
         )}
         <div className="w-40">
-          <label className="block text-sm font-medium text-on-surface-variant">Perfil</label>
+          <label className="block text-label-sm font-medium text-text-secondary">Perfil</label>
           <select required value={role} onChange={e => setRole(e.target.value as Role)}
-            className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
+            className="mt-1 block w-full rounded-lg border border-border-technical bg-surface px-3 py-3 text-body-sm text-text-primary focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
             <option value="admin">Admin</option>
             <option value="pedagogico">Pedagógico</option>
             <option value="municipio">Município</option>
@@ -76,15 +76,15 @@ export function Formulario({ item, onClose, onSalvo }: FormularioProps) {
         </div>
         {role === 'municipio' && (
           <div className="w-64">
-            <label className="block text-sm font-medium text-on-surface-variant">Município</label>
+            <label className="block text-label-sm font-medium text-text-secondary">Município</label>
             <select required value={municipioId} onChange={e => setMunicipioId(e.target.value)}
-              className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
+              className="mt-1 block w-full rounded-lg border border-border-technical bg-surface px-3 py-3 text-body-sm text-text-primary focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
               <option value="">Selecione</option>
               {municipios.map(m => <option key={m.id} value={m.id}>{m.nome}</option>)}
             </select>
           </div>
         )}
-        <div className="flex gap-2">
+        <div className="flex gap-stack-sm">
           <Button type="submit" loading={saving}>Salvar</Button>
           <Button variant="secondary" type="button" onClick={onClose}>Cancelar</Button>
         </div>

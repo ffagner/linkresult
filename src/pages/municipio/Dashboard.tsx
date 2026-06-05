@@ -47,25 +47,25 @@ export function MunicipioDashboard() {
 
   return (
     <div>
-      <h1 className="mb-2 text-2xl font-bold text-on-surface">Meus Relatórios</h1>
-      <p className="mb-6 text-sm text-text-secondary">
+      <h1 className="mb-stack-md text-headline-lg font-bold text-text-primary">Meus Relatórios</h1>
+      <p className="mb-stack-lg text-body-sm text-text-secondary">
         {profile?.municipioId ? `Município: ${profile.municipioId}` : ''}
       </p>
 
       {relatorios.length === 0 ? (
         <EmptyState message="Nenhum relatório disponível ainda." />
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-stack-lg">
           {agrupados.map(({ avaliacao, itens }) => (
-            <div key={avaliacao.id} className="rounded-lg border border-border-technical bg-surface card-shadow">
-              <div className="border-b border-border-technical px-6 py-4">
-                <h2 className="text-lg font-semibold text-on-surface">{avaliacao.nome}</h2>
-                <p className="text-sm text-text-secondary">Ano: {avaliacao.ano}</p>
+            <div key={avaliacao.id} className="rounded-xl border border-border-technical bg-surface shadow-card">
+              <div className="border-b border-border-technical px-gutter py-stack-md">
+                <h2 className="text-headline-sm font-semibold text-text-primary">{avaliacao.nome}</h2>
+                <p className="text-body-sm text-text-secondary">Ano: {avaliacao.ano}</p>
               </div>
-              <div className="divide-y">
+              <div className="divide-y divide-border-technical">
                 {itens.map(item => (
-                  <div key={item.id} className="flex items-center justify-between px-6 py-3">
-                    <span className="text-sm text-on-surface-variant">{getNomeSerie(item.serieId)}</span>
+                  <div key={item.id} className="flex items-center justify-between px-gutter py-stack-md">
+                    <span className="text-body-sm text-text-secondary">{getNomeSerie(item.serieId)}</span>
                     <Link to={`/municipio/relatorio/${item.id}`}>
                       <Button>Ver Relatório</Button>
                     </Link>

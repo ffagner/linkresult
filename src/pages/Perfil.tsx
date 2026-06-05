@@ -50,51 +50,51 @@ export function PerfilPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
-      <div className="rounded-xl border border-border-technical bg-surface p-8 card-shadow">
-        <h1 className="mb-6 text-2xl font-bold text-on-surface">Meu Perfil</h1>
+    <div className="mx-auto max-w-2xl px-gutter py-10">
+      <div className="rounded-xl border border-border-technical bg-surface p-8 shadow-card">
+        <h1 className="mb-stack-lg text-headline-lg font-bold text-text-primary">Meu Perfil</h1>
 
-        <div className="mb-8 space-y-4">
+        <div className="mb-8 space-y-stack-md">
           <div>
-            <label className="block text-sm font-medium text-text-secondary">Nome</label>
-            <p className="text-on-surface">{profile?.nome}</p>
+            <label className="block text-body-sm font-medium text-text-secondary">Nome</label>
+            <p className="text-text-primary">{profile?.nome}</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-text-secondary">Email</label>
-            <p className="text-on-surface">{profile?.email}</p>
+            <label className="block text-body-sm font-medium text-text-secondary">Email</label>
+            <p className="text-text-primary">{profile?.email}</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-text-secondary">Perfil</label>
-            <p className="text-on-surface">{profile ? roleLabels[profile.role] : ''}</p>
+            <label className="block text-body-sm font-medium text-text-secondary">Perfil</label>
+            <p className="text-text-primary">{profile ? roleLabels[profile.role] : ''}</p>
           </div>
           {profile?.municipioId && (
             <div>
-              <label className="block text-sm font-medium text-text-secondary">Município</label>
-              <p className="text-on-surface">{profile.municipioId}</p>
+              <label className="block text-body-sm font-medium text-text-secondary">Município</label>
+              <p className="text-text-primary">{profile.municipioId}</p>
             </div>
           )}
         </div>
 
         {showForm ? (
-          <form onSubmit={handleChangePassword} className="mb-6 space-y-4 border-t pt-6">
-            <h2 className="text-lg font-semibold text-on-surface">Alterar Senha</h2>
+          <form onSubmit={handleChangePassword} className="mb-stack-lg space-y-stack-md border-t pt-6">
+            <h2 className="text-headline-sm font-semibold text-text-primary">Alterar Senha</h2>
             <div>
-              <label className="block text-sm font-medium text-on-surface-variant">Senha atual</label>
+              <label className="block text-label-sm font-medium text-text-secondary">Senha atual</label>
               <input type="password" required value={currentPassword} onChange={e => setCurrentPassword(e.target.value)}
-                className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary" />
+                className="mt-1 block w-full rounded-lg border border-border-technical bg-surface px-3 py-3 text-body-sm text-text-primary focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-on-surface-variant">Nova senha</label>
+              <label className="block text-label-sm font-medium text-text-secondary">Nova senha</label>
               <input type="password" required value={newPassword} onChange={e => setNewPassword(e.target.value)}
-                className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary" />
+                className="mt-1 block w-full rounded-lg border border-border-technical bg-surface px-3 py-3 text-body-sm text-text-primary focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary" />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-stack-sm">
               <Button type="submit" loading={saving}>Salvar</Button>
               <Button variant="secondary" type="button" onClick={() => setShowForm(false)}>Cancelar</Button>
             </div>
           </form>
         ) : (
-          <div className="flex gap-2 border-t pt-6">
+          <div className="flex gap-stack-sm border-t pt-6">
             <Button onClick={() => setShowForm(true)}>Alterar Senha</Button>
             <Button variant="secondary" onClick={() => navigate(getHome(profile?.role ?? 'municipio'))}>Voltar</Button>
             <Button variant="danger" onClick={handleLogout}>Sair</Button>

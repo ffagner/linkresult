@@ -7,6 +7,7 @@ import { EmptyState } from '@/shared/ui/EmptyState'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 import { ConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { useToast } from '@/shared/ui/Toast'
+import { Icon } from '@/shared/ui/Icon'
 import { Formulario } from './Formulario'
 import { CadastroLote } from './CadastroLote'
 import { Link } from 'react-router-dom'
@@ -79,35 +80,60 @@ export function RelatoriosListagem() {
       {itens.length === 0 ? (
         <EmptyState message="Nenhum relatório cadastrado." />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border-technical bg-surface card-shadow">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b bg-surface-container-low">
-              <tr>
-                <th className="px-4 py-3 font-medium text-on-surface-variant">Município</th>
-                <th className="px-4 py-3 font-medium text-on-surface-variant">Avaliação</th>
-                <th className="px-4 py-3 font-medium text-on-surface-variant">Série</th>
-                <th className="px-4 py-3 font-medium text-on-surface-variant">Status</th>
-                <th className="px-4 py-3 font-medium text-on-surface-variant">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border-technical">
-              {itens.map(item => (
-                <tr key={item.id} className="hover:bg-surface-container-low">
-                  <td className="px-4 py-3">{item.municipioId}</td>
-                  <td className="px-4 py-3">{item.avaliacaoId}</td>
-                  <td className="px-4 py-3">{item.serieId}</td>
-                  <td className="px-4 py-3"><StatusBadge liberado={item.liberado} /></td>
-                  <td className="flex gap-2 px-4 py-3">
-                    <Link to={`/admin/relatorio/${item.id}`}>
-                      <Button variant="secondary">Visualizar</Button>
-                    </Link>
-                    <Button variant="secondary" onClick={() => { setEditing(item); setShowForm(true) }}>Editar</Button>
-                    <Button variant="danger" onClick={() => setDeleting(item.id)}>Excluir</Button>
-                  </td>
+        <div className="overflow-hidden rounded-xl border border-border-technical bg-surface shadow-card">
+          <div className="border-b border-border-technical px-gutter py-stack-md">
+            <h3 className="text-headline-sm text-text-primary">Relatórios</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-surface-container-low">
+                <tr>
+                  <th className="px-gutter py-4 text-label-sm text-text-secondary">MUNICÍPIO</th>
+                  <th className="px-gutter py-4 text-label-sm text-text-secondary">AVALIAÇÃO</th>
+                  <th className="px-gutter py-4 text-label-sm text-text-secondary">SÉRIE</th>
+                  <th className="px-gutter py-4 text-label-sm text-text-secondary">STATUS</th>
+                  <th className="px-gutter py-4 text-label-sm text-text-secondary">AÇÕES</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border-technical">
+                {itens.map(item => (
+                  <tr key={item.id} className="group transition-colors hover:bg-surface-container-low">
+                    <td className="px-gutter py-4">
+                      <span className="text-body-sm text-text-secondary">{item.municipioId}</span>
+                    </td>
+                    <td className="px-gutter py-4">
+                      <span className="text-body-sm text-text-secondary">{item.avaliacaoId}</span>
+                    </td>
+                    <td className="px-gutter py-4">
+                      <span className="text-body-sm text-text-secondary">{item.serieId}</span>
+                    </td>
+                    <td className="px-gutter py-4"><StatusBadge liberado={item.liberado} /></td>
+                    <td className="px-gutter py-4">
+                      <div className="flex items-center gap-1">
+                        <Link to={`/admin/relatorio/${item.id}`}>
+                          <button className="rounded-md p-1 text-text-secondary transition-colors hover:bg-surface-container-highest hover:text-primary">
+                            <Icon name="visibility" />
+                          </button>
+                        </Link>
+                        <button
+                          className="rounded-md p-1 text-text-secondary transition-colors hover:bg-surface-container-highest hover:text-primary"
+                          onClick={() => { setEditing(item); setShowForm(true) }}
+                        >
+                          <Icon name="edit" />
+                        </button>
+                        <button
+                          className="rounded-md p-1 text-text-secondary transition-colors hover:bg-surface-container-highest hover:text-error"
+                          onClick={() => setDeleting(item.id)}
+                        >
+                          <Icon name="delete" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

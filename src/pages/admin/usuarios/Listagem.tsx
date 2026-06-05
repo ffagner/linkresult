@@ -6,6 +6,7 @@ import { Spinner } from '@/shared/ui/Spinner'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { ConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { useToast } from '@/shared/ui/Toast'
+import { Icon } from '@/shared/ui/Icon'
 import { Formulario } from './Formulario'
 
 const roleLabels: Record<string, string> = {
@@ -67,30 +68,53 @@ export function UsuariosListagem() {
       {itens.length === 0 ? (
         <EmptyState message="Nenhum usuário cadastrado." />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border-technical bg-surface card-shadow">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b bg-surface-container-low">
-              <tr>
-                <th className="px-4 py-3 font-medium text-on-surface-variant">Nome</th>
-                <th className="px-4 py-3 font-medium text-on-surface-variant">Email</th>
-                <th className="px-4 py-3 font-medium text-on-surface-variant">Perfil</th>
-                <th className="px-4 py-3 font-medium text-on-surface-variant">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border-technical">
-              {itens.map(item => (
-                <tr key={item.uid} className="hover:bg-surface-container-low">
-                  <td className="px-4 py-3">{item.nome}</td>
-                  <td className="px-4 py-3">{item.email}</td>
-                  <td className="px-4 py-3">{roleLabels[item.role]}</td>
-                  <td className="flex gap-2 px-4 py-3">
-                    <Button variant="secondary" onClick={() => { setEditing(item); setShowForm(true) }}>Editar</Button>
-                    <Button variant="danger" onClick={() => setDeleting(item.uid)}>Excluir</Button>
-                  </td>
+        <div className="overflow-hidden rounded-xl border border-border-technical bg-surface shadow-card">
+          <div className="border-b border-border-technical px-gutter py-stack-md">
+            <h3 className="text-headline-sm text-text-primary">Usuários</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-surface-container-low">
+                <tr>
+                  <th className="px-gutter py-4 text-label-sm text-text-secondary">NOME</th>
+                  <th className="px-gutter py-4 text-label-sm text-text-secondary">EMAIL</th>
+                  <th className="px-gutter py-4 text-label-sm text-text-secondary">PERFIL</th>
+                  <th className="px-gutter py-4 text-label-sm text-text-secondary">AÇÕES</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border-technical">
+                {itens.map(item => (
+                  <tr key={item.uid} className="group transition-colors hover:bg-surface-container-low">
+                    <td className="px-gutter py-4">
+                      <span className="text-body-md text-text-primary">{item.nome}</span>
+                    </td>
+                    <td className="px-gutter py-4">
+                      <span className="text-body-sm text-text-secondary">{item.email}</span>
+                    </td>
+                    <td className="px-gutter py-4">
+                      <span className="text-body-sm text-text-secondary">{roleLabels[item.role]}</span>
+                    </td>
+                    <td className="px-gutter py-4">
+                      <div className="flex items-center gap-1">
+                        <button
+                          className="rounded-md p-1 text-text-secondary transition-colors hover:bg-surface-container-highest hover:text-primary"
+                          onClick={() => { setEditing(item); setShowForm(true) }}
+                        >
+                          <Icon name="edit" />
+                        </button>
+                        <button
+                          className="rounded-md p-1 text-text-secondary transition-colors hover:bg-surface-container-highest hover:text-error"
+                          onClick={() => setDeleting(item.uid)}
+                        >
+                          <Icon name="delete" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

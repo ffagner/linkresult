@@ -72,19 +72,19 @@ export function PedagogicoRelatorioVisualizacao() {
   }
 
   if (loading) return <Spinner />
-  if (error) return <div className="p-6 text-error">{error}</div>
+  if (error) return <div className="p-stack-lg text-error">{error}</div>
   if (!relatorio) return null
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b bg-surface px-6 py-3">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between border-b bg-surface px-gutter py-stack-md">
+        <div className="flex items-center gap-gutter">
           <Link to="/pedagogico/relatorios">
-            <Button variant="secondary">← Voltar</Button>
+            <Button variant="secondary">Voltar</Button>
           </Link>
           <div>
-            <p className="text-sm text-text-secondary">Visualizando Relatório</p>
-            <p className="text-sm font-medium text-on-surface">
+            <p className="text-body-sm text-text-secondary">Visualizando Relatório</p>
+            <p className="text-body-sm font-medium text-text-primary">
               {getNome(relatorio.municipioId, municipios)} — {getNome(relatorio.avaliacaoId, avaliacoes)} — {getNome(relatorio.serieId, series)}
             </p>
           </div>

@@ -24,19 +24,19 @@ export function PedagogicoDashboard() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-on-surface">Dashboard Pedagógico</h1>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-        <div className="rounded-lg border border-primary-fixed bg-primary-fixed p-6 text-primary card-shadow">
-          <p className="text-sm font-medium">Total de Relatórios</p>
-          <p className="mt-1 text-3xl font-bold">{stats.total}</p>
+      <h1 className="mb-stack-lg text-headline-lg font-bold text-text-primary">Dashboard Pedagógico</h1>
+      <div className="grid grid-cols-1 gap-gutter sm:grid-cols-3">
+        <div className="rounded-xl border border-primary-fixed bg-primary-fixed p-stack-lg text-primary shadow-card">
+          <p className="text-body-sm font-medium">Total de Relatórios</p>
+          <p className="mt-stack-md text-headline-lg font-bold">{stats.total}</p>
         </div>
-        <div className="rounded-lg border border-success/30 bg-success/10 p-6 text-success card-shadow">
-          <p className="text-sm font-medium">Liberados</p>
-          <p className="mt-1 text-3xl font-bold">{stats.liberados}</p>
+        <div className="rounded-xl border border-success/30 bg-success/10 p-stack-lg text-success shadow-card">
+          <p className="text-body-sm font-medium">Liberados</p>
+          <p className="mt-stack-md text-headline-lg font-bold">{stats.liberados}</p>
         </div>
-        <div className="rounded-lg border border-warning/30 bg-warning/10 p-6 text-warning card-shadow">
-          <p className="text-sm font-medium">Pendentes</p>
-          <p className="mt-1 text-3xl font-bold">{stats.pendentes}</p>
+        <div className="rounded-xl border border-warning/30 bg-warning/10 p-stack-lg text-warning shadow-card">
+          <p className="text-body-sm font-medium">Pendentes</p>
+          <p className="mt-stack-md text-headline-lg font-bold">{stats.pendentes}</p>
         </div>
       </div>
     </div>
