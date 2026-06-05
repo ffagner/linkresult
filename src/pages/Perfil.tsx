@@ -51,7 +51,7 @@ export function PerfilPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <div className="rounded-xl border border-border-technical bg-surface p-8">
+      <div className="rounded-xl border border-border-technical bg-surface p-8 card-shadow">
         <h1 className="mb-6 text-2xl font-bold text-on-surface">Meu Perfil</h1>
 
         <div className="mb-8 space-y-4">

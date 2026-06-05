@@ -74,7 +74,7 @@ export function CadastroLote({ onClose, onSalvo }: CadastroLoteProps) {
   }
 
   return (
-    <div className="mb-6 rounded-lg border border-border-technical bg-surface p-6">
+    <div className="mb-6 rounded-lg border border-border-technical bg-surface p-6 card-shadow">
       <h2 className="mb-4 text-lg font-semibold text-on-surface">Cadastro em Lote</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex flex-wrap gap-4">

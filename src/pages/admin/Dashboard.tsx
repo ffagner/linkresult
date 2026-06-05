@@ -50,7 +50,7 @@ function Card({ title, value, color }: { title: string; value: number; color: st
   }
 
   return (
-    <div className={`rounded-lg border p-6 ${colors[color]}`}>
+    <div className={`rounded-lg border p-6 card-shadow ${colors[color]}`}>
       <p className="text-sm font-medium">{title}</p>
       <p className="mt-1 text-3xl font-bold">{value}</p>
     </div>

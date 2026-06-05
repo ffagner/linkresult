@@ -36,7 +36,7 @@ export function Formulario({ item, onClose, onSalvo }: FormularioProps) {
   }
 
   return (
-    <div className="mb-6 rounded-lg border border-border-technical bg-surface p-6">
+    <div className="mb-6 rounded-lg border border-border-technical bg-surface p-6 card-shadow">
       <h2 className="mb-4 text-lg font-semibold text-on-surface">{item ? 'Editar' : 'Nova'} Avaliação</h2>
       <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-4">
         <div className="flex-1">

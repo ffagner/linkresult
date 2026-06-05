@@ -57,7 +57,7 @@ export function MunicipioDashboard() {
       ) : (
         <div className="space-y-6">
           {agrupados.map(({ avaliacao, itens }) => (
-            <div key={avaliacao.id} className="rounded-lg border border-border-technical bg-surface">
+            <div key={avaliacao.id} className="rounded-lg border border-border-technical bg-surface card-shadow">
               <div className="border-b border-border-technical px-6 py-4">
                 <h2 className="text-lg font-semibold text-on-surface">{avaliacao.nome}</h2>
                 <p className="text-sm text-text-secondary">Ano: {avaliacao.ano}</p>

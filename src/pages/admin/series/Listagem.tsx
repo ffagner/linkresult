@@ -61,7 +61,7 @@ export function SeriesListagem() {
       {itens.length === 0 ? (
         <EmptyState message="Nenhuma série cadastrada." />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border-technical bg-surface">
+        <div className="overflow-hidden rounded-lg border border-border-technical bg-surface card-shadow">
           <table className="w-full text-left text-sm">
             <thead className="border-b bg-surface-container-low">
               <tr>

@@ -79,7 +79,7 @@ export function RelatoriosListagem() {
       {itens.length === 0 ? (
         <EmptyState message="Nenhum relatório cadastrado." />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border-technical bg-surface">
+        <div className="overflow-hidden rounded-lg border border-border-technical bg-surface card-shadow">
           <table className="w-full text-left text-sm">
             <thead className="border-b bg-surface-container-low">
               <tr>
