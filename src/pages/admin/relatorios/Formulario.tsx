@@ -54,37 +54,37 @@ export function Formulario({ item, onClose, onSalvo }: FormularioProps) {
   }
 
   return (
-    <div className="mb-6 rounded-xl border border-gray-200 bg-white p-6">
-      <h2 className="mb-4 text-lg font-semibold text-gray-900">{item ? 'Editar' : 'Novo'} Relatório</h2>
+    <div className="mb-6 rounded-lg border border-border-technical bg-surface p-6">
+      <h2 className="mb-4 text-lg font-semibold text-on-surface">{item ? 'Editar' : 'Novo'} Relatório</h2>
       <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-4">
         <div className="w-64">
-          <label className="block text-sm font-medium text-gray-700">Município</label>
+          <label className="block text-sm font-medium text-on-surface-variant">Município</label>
           <select required value={municipioId} onChange={e => setMunicipioId(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+            className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
             <option value="">Selecione</option>
             {municipios.map(m => <option key={m.id} value={m.id}>{m.nome}</option>)}
           </select>
         </div>
         <div className="w-64">
-          <label className="block text-sm font-medium text-gray-700">Avaliação</label>
+          <label className="block text-sm font-medium text-on-surface-variant">Avaliação</label>
           <select required value={avaliacaoId} onChange={e => setAvaliacaoId(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+            className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
             <option value="">Selecione</option>
             {avaliacoes.map(a => <option key={a.id} value={a.id}>{a.nome} ({a.ano})</option>)}
           </select>
         </div>
         <div className="w-48">
-          <label className="block text-sm font-medium text-gray-700">Série</label>
+          <label className="block text-sm font-medium text-on-surface-variant">Série</label>
           <select required value={serieId} onChange={e => setSerieId(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+            className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
             <option value="">Selecione</option>
             {series.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
           </select>
         </div>
         <div className="min-w-[300px] flex-1">
-          <label className="block text-sm font-medium text-gray-700">Link do Power BI</label>
+          <label className="block text-sm font-medium text-on-surface-variant">Link do Power BI</label>
           <input type="url" required value={link} onChange={e => setLink(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary"
             placeholder="https://app.powerbi.com/..." />
         </div>
         <div className="flex gap-2">

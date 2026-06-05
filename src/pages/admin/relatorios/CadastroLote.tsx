@@ -74,22 +74,22 @@ export function CadastroLote({ onClose, onSalvo }: CadastroLoteProps) {
   }
 
   return (
-    <div className="mb-6 rounded-xl border border-gray-200 bg-white p-6">
-      <h2 className="mb-4 text-lg font-semibold text-gray-900">Cadastro em Lote</h2>
+    <div className="mb-6 rounded-lg border border-border-technical bg-surface p-6">
+      <h2 className="mb-4 text-lg font-semibold text-on-surface">Cadastro em Lote</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex flex-wrap gap-4">
           <div className="w-64">
-            <label className="block text-sm font-medium text-gray-700">Município</label>
+            <label className="block text-sm font-medium text-on-surface-variant">Município</label>
             <select required value={municipioId} onChange={e => setMunicipioId(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+              className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
               <option value="">Selecione</option>
               {municipios.map(m => <option key={m.id} value={m.id}>{m.nome}</option>)}
             </select>
           </div>
           <div className="w-64">
-            <label className="block text-sm font-medium text-gray-700">Avaliação</label>
+            <label className="block text-sm font-medium text-on-surface-variant">Avaliação</label>
             <select required value={avaliacaoId} onChange={e => setAvaliacaoId(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+              className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
               <option value="">Selecione</option>
               {avaliacoes.map(a => <option key={a.id} value={a.id}>{a.nome} ({a.ano})</option>)}
             </select>
@@ -98,30 +98,30 @@ export function CadastroLote({ onClose, onSalvo }: CadastroLoteProps) {
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-gray-700">Séries e Links</h3>
+            <h3 className="text-sm font-medium text-on-surface-variant">Séries e Links</h3>
             <Button type="button" variant="secondary" onClick={adicionarItem}>+ Adicionar Série</Button>
           </div>
           {itens.map((item, idx) => (
             <div key={idx} className="flex items-end gap-3">
               <div className="w-48">
-                <label className="block text-xs font-medium text-gray-600">Série</label>
+                <label className="block text-xs font-medium text-on-surface-variant">Série</label>
                 <select required value={item.serieId} onChange={e => atualizarItem(idx, 'serieId', e.target.value)}
-                  className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                  className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
                   <option value="">Selecione</option>
                   {series.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
                 </select>
               </div>
               <div className="flex-1">
-                <label className="block text-xs font-medium text-gray-600">Link Power BI</label>
+                <label className="block text-xs font-medium text-on-surface-variant">Link Power BI</label>
                 <input type="url" required value={item.link} onChange={e => atualizarItem(idx, 'link', e.target.value)}
-                  className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary"
                   placeholder="https://app.powerbi.com/..." />
               </div>
               <Button type="button" variant="danger" onClick={() => removerItem(idx)}>Remover</Button>
             </div>
           ))}
           {itens.length === 0 && (
-            <p className="text-sm text-gray-400">Clique em "Adicionar Série" para começar.</p>
+            <p className="text-sm text-text-secondary">Clique em "Adicionar Série" para começar.</p>
           )}
         </div>
 

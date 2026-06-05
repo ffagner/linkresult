@@ -50,7 +50,7 @@ export function RelatoriosListagem() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Relatórios</h1>
+        <h1 className="text-2xl font-bold text-on-surface">Relatórios</h1>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={() => { setShowLote(true); setShowForm(false) }}>
             Cadastro em Lote
@@ -79,20 +79,20 @@ export function RelatoriosListagem() {
       {itens.length === 0 ? (
         <EmptyState message="Nenhum relatório cadastrado." />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-border-technical bg-surface">
           <table className="w-full text-left text-sm">
-            <thead className="border-b bg-gray-50">
+            <thead className="border-b bg-surface-container-low">
               <tr>
-                <th className="px-4 py-3 font-medium text-gray-600">Município</th>
-                <th className="px-4 py-3 font-medium text-gray-600">Avaliação</th>
-                <th className="px-4 py-3 font-medium text-gray-600">Série</th>
-                <th className="px-4 py-3 font-medium text-gray-600">Status</th>
-                <th className="px-4 py-3 font-medium text-gray-600">Ações</th>
+                <th className="px-4 py-3 font-medium text-on-surface-variant">Município</th>
+                <th className="px-4 py-3 font-medium text-on-surface-variant">Avaliação</th>
+                <th className="px-4 py-3 font-medium text-on-surface-variant">Série</th>
+                <th className="px-4 py-3 font-medium text-on-surface-variant">Status</th>
+                <th className="px-4 py-3 font-medium text-on-surface-variant">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-border-technical">
               {itens.map(item => (
-                <tr key={item.id} className="hover:bg-gray-50">
+                <tr key={item.id} className="hover:bg-surface-container-low">
                   <td className="px-4 py-3">{item.municipioId}</td>
                   <td className="px-4 py-3">{item.avaliacaoId}</td>
                   <td className="px-4 py-3">{item.serieId}</td>

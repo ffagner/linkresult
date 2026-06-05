@@ -15,16 +15,16 @@ export function MunicipioLayout() {
 
   return (
     <div className="flex h-screen flex-col">
-      <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6">
+      <header className="flex h-16 items-center justify-between border-b border-border-technical bg-surface px-6">
         <div className="flex items-center gap-2">
-          <span className="text-xl font-bold text-gray-900">LinkResults</span>
+          <span className="text-xl font-bold text-on-surface">LinkResults</span>
         </div>
         <div className="flex items-center gap-4">
-          <Link to="/perfil" className="text-sm text-blue-600 hover:text-blue-700">{profile?.nome}</Link>
+          <Link to="/perfil" className="text-sm text-secondary hover:text-primary">{profile?.nome}</Link>
           <Button variant="secondary" onClick={handleLogout}>Sair</Button>
         </div>
       </header>
-      <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
+      <main className="flex-1 overflow-y-auto bg-background p-6">
         <Outlet />
       </main>
     </div>

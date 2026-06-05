@@ -14,14 +14,14 @@ export function Header() {
   }
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6">
+    <header className="flex h-16 items-center justify-between border-b border-border-technical bg-surface px-6">
       <div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-text-secondary">
           Admin
         </p>
       </div>
       <div className="flex items-center gap-4">
-        <Link to="/perfil" className="text-sm text-blue-600 hover:text-blue-700">
+        <Link to="/perfil" className="text-sm text-secondary hover:text-primary">
           {profile?.nome}
         </Link>
         <Button variant="secondary" onClick={handleLogout}>

@@ -64,7 +64,7 @@ export function MunicipioRelatorioVisualizacao() {
   if (error) return (
     <div className="flex min-h-[400px] items-center justify-center">
       <div className="text-center">
-        <p className="mb-4 text-red-600">{error}</p>
+        <p className="mb-4 text-error">{error}</p>
         <Link to="/municipio">
           <Button variant="secondary">← Voltar</Button>
         </Link>
@@ -75,14 +75,14 @@ export function MunicipioRelatorioVisualizacao() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b bg-white px-6 py-3">
+      <div className="flex items-center justify-between border-b bg-surface px-6 py-3">
         <div className="flex items-center gap-4">
           <Link to="/municipio">
             <Button variant="secondary">← Voltar</Button>
           </Link>
           <div>
-            <p className="text-sm text-gray-500">Visualizando Relatório</p>
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm text-text-secondary">Visualizando Relatório</p>
+            <p className="text-sm font-medium text-on-surface">
               {getNome(relatorio.avaliacaoId, avaliacoes)} — {getNome(relatorio.serieId, series)}
             </p>
           </div>

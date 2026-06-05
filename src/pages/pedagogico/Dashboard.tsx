@@ -24,17 +24,17 @@ export function PedagogicoDashboard() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Dashboard Pedagógico</h1>
+      <h1 className="mb-6 text-2xl font-bold text-on-surface">Dashboard Pedagógico</h1>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-        <div className="rounded-xl border border-blue-200 bg-blue-50 p-6 text-blue-700">
+        <div className="rounded-lg border border-primary-fixed bg-primary-fixed p-6 text-primary">
           <p className="text-sm font-medium">Total de Relatórios</p>
           <p className="mt-1 text-3xl font-bold">{stats.total}</p>
         </div>
-        <div className="rounded-xl border border-green-200 bg-green-50 p-6 text-green-700">
+        <div className="rounded-lg border border-success/30 bg-success/10 p-6 text-success">
           <p className="text-sm font-medium">Liberados</p>
           <p className="mt-1 text-3xl font-bold">{stats.liberados}</p>
         </div>
-        <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-6 text-yellow-700">
+        <div className="rounded-lg border border-warning/30 bg-warning/10 p-6 text-warning">
           <p className="text-sm font-medium">Pendentes</p>
           <p className="mt-1 text-3xl font-bold">{stats.pendentes}</p>
         </div>

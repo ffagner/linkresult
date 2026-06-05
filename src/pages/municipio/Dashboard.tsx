@@ -47,8 +47,8 @@ export function MunicipioDashboard() {
 
   return (
     <div>
-      <h1 className="mb-2 text-2xl font-bold text-gray-900">Meus Relatórios</h1>
-      <p className="mb-6 text-sm text-gray-500">
+      <h1 className="mb-2 text-2xl font-bold text-on-surface">Meus Relatórios</h1>
+      <p className="mb-6 text-sm text-text-secondary">
         {profile?.municipioId ? `Município: ${profile.municipioId}` : ''}
       </p>
 
@@ -57,15 +57,15 @@ export function MunicipioDashboard() {
       ) : (
         <div className="space-y-6">
           {agrupados.map(({ avaliacao, itens }) => (
-            <div key={avaliacao.id} className="rounded-xl border border-gray-200 bg-white">
-              <div className="border-b border-gray-100 px-6 py-4">
-                <h2 className="text-lg font-semibold text-gray-900">{avaliacao.nome}</h2>
-                <p className="text-sm text-gray-500">Ano: {avaliacao.ano}</p>
+            <div key={avaliacao.id} className="rounded-lg border border-border-technical bg-surface">
+              <div className="border-b border-border-technical px-6 py-4">
+                <h2 className="text-lg font-semibold text-on-surface">{avaliacao.nome}</h2>
+                <p className="text-sm text-text-secondary">Ano: {avaliacao.ano}</p>
               </div>
               <div className="divide-y">
                 {itens.map(item => (
                   <div key={item.id} className="flex items-center justify-between px-6 py-3">
-                    <span className="text-sm text-gray-700">{getNomeSerie(item.serieId)}</span>
+                    <span className="text-sm text-on-surface-variant">{getNomeSerie(item.serieId)}</span>
                     <Link to={`/municipio/relatorio/${item.id}`}>
                       <Button>Ver Relatório</Button>
                     </Link>

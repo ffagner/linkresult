@@ -36,27 +36,27 @@ export function Formulario({ item, onClose, onSalvo }: FormularioProps) {
   }
 
   return (
-    <div className="mb-6 rounded-xl border border-gray-200 bg-white p-6">
-      <h2 className="mb-4 text-lg font-semibold text-gray-900">{item ? 'Editar' : 'Nova'} Série</h2>
+    <div className="mb-6 rounded-lg border border-border-technical bg-surface p-6">
+      <h2 className="mb-4 text-lg font-semibold text-on-surface">{item ? 'Editar' : 'Nova'} Série</h2>
       <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-4">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700">Nome</label>
+          <label className="block text-sm font-medium text-on-surface-variant">Nome</label>
           <input
             type="text"
             required
             value={nome}
             onChange={e => setNome(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary"
           />
         </div>
         <div className="w-32">
-          <label className="block text-sm font-medium text-gray-700">Ordem</label>
+          <label className="block text-sm font-medium text-on-surface-variant">Ordem</label>
           <input
             type="number"
             required
             value={ordem}
             onChange={e => setOrdem(Number(e.target.value))}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary"
           />
         </div>
         <div className="flex gap-2">

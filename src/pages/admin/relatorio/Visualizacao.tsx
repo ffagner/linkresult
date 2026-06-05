@@ -40,14 +40,14 @@ export function RelatorioVisualizacao() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b bg-white px-6 py-3">
+      <div className="flex items-center justify-between border-b border-border-technical bg-surface px-6 py-3">
         <div className="flex items-center gap-4">
           <Link to="/admin/relatorios">
             <Button variant="secondary">← Voltar</Button>
           </Link>
           <div>
-            <p className="text-sm text-gray-500">Visualizando Relatório</p>
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm text-text-secondary">Visualizando Relatório</p>
+            <p className="text-sm font-medium text-on-surface">
               {relatorio.municipioId} — {relatorio.avaliacaoId} — {relatorio.serieId}
             </p>
           </div>

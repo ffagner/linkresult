@@ -30,7 +30,7 @@ export function AdminDashboard() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Dashboard</h1>
+      <h1 className="mb-6 text-2xl font-bold text-on-surface">Dashboard</h1>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <Card title="Municípios" value={stats.municipios} color="blue" />
         <Card title="Avaliações" value={stats.avaliacoes} color="green" />
@@ -43,14 +43,14 @@ export function AdminDashboard() {
 
 function Card({ title, value, color }: { title: string; value: number; color: string }) {
   const colors: Record<string, string> = {
-    blue: 'bg-blue-50 text-blue-700 border-blue-200',
-    green: 'bg-green-50 text-green-700 border-green-200',
-    purple: 'bg-purple-50 text-purple-700 border-purple-200',
-    amber: 'bg-amber-50 text-amber-700 border-amber-200',
+    blue: 'bg-primary-fixed text-primary border-primary-fixed',
+    green: 'bg-success/10 text-success border-success/30',
+    purple: 'bg-primary-fixed text-primary border-primary-fixed',
+    amber: 'bg-warning/10 text-warning border-warning/30',
   }
 
   return (
-    <div className={`rounded-xl border p-6 ${colors[color]}`}>
+    <div className={`rounded-lg border p-6 ${colors[color]}`}>
       <p className="text-sm font-medium">{title}</p>
       <p className="mt-1 text-3xl font-bold">{value}</p>
     </div>

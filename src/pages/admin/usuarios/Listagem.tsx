@@ -52,7 +52,7 @@ export function UsuariosListagem() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Usuários</h1>
+        <h1 className="text-2xl font-bold text-on-surface">Usuários</h1>
         <Button onClick={() => { setEditing(null); setShowForm(true) }}>+ Novo Usuário</Button>
       </div>
 
@@ -67,19 +67,19 @@ export function UsuariosListagem() {
       {itens.length === 0 ? (
         <EmptyState message="Nenhum usuário cadastrado." />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-border-technical bg-surface">
           <table className="w-full text-left text-sm">
-            <thead className="border-b bg-gray-50">
+            <thead className="border-b bg-surface-container-low">
               <tr>
-                <th className="px-4 py-3 font-medium text-gray-600">Nome</th>
-                <th className="px-4 py-3 font-medium text-gray-600">Email</th>
-                <th className="px-4 py-3 font-medium text-gray-600">Perfil</th>
-                <th className="px-4 py-3 font-medium text-gray-600">Ações</th>
+                <th className="px-4 py-3 font-medium text-on-surface-variant">Nome</th>
+                <th className="px-4 py-3 font-medium text-on-surface-variant">Email</th>
+                <th className="px-4 py-3 font-medium text-on-surface-variant">Perfil</th>
+                <th className="px-4 py-3 font-medium text-on-surface-variant">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-border-technical">
               {itens.map(item => (
-                <tr key={item.uid} className="hover:bg-gray-50">
+                <tr key={item.uid} className="hover:bg-surface-container-low">
                   <td className="px-4 py-3">{item.nome}</td>
                   <td className="px-4 py-3">{item.email}</td>
                   <td className="px-4 py-3">{roleLabels[item.role]}</td>

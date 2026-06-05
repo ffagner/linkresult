@@ -51,42 +51,42 @@ export function PerfilPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <div className="rounded-xl border border-gray-200 bg-white p-8">
-        <h1 className="mb-6 text-2xl font-bold text-gray-900">Meu Perfil</h1>
+      <div className="rounded-xl border border-border-technical bg-surface p-8">
+        <h1 className="mb-6 text-2xl font-bold text-on-surface">Meu Perfil</h1>
 
         <div className="mb-8 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-500">Nome</label>
-            <p className="text-gray-900">{profile?.nome}</p>
+            <label className="block text-sm font-medium text-text-secondary">Nome</label>
+            <p className="text-on-surface">{profile?.nome}</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-500">Email</label>
-            <p className="text-gray-900">{profile?.email}</p>
+            <label className="block text-sm font-medium text-text-secondary">Email</label>
+            <p className="text-on-surface">{profile?.email}</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-500">Perfil</label>
-            <p className="text-gray-900">{profile ? roleLabels[profile.role] : ''}</p>
+            <label className="block text-sm font-medium text-text-secondary">Perfil</label>
+            <p className="text-on-surface">{profile ? roleLabels[profile.role] : ''}</p>
           </div>
           {profile?.municipioId && (
             <div>
-              <label className="block text-sm font-medium text-gray-500">Município</label>
-              <p className="text-gray-900">{profile.municipioId}</p>
+              <label className="block text-sm font-medium text-text-secondary">Município</label>
+              <p className="text-on-surface">{profile.municipioId}</p>
             </div>
           )}
         </div>
 
         {showForm ? (
           <form onSubmit={handleChangePassword} className="mb-6 space-y-4 border-t pt-6">
-            <h2 className="text-lg font-semibold text-gray-900">Alterar Senha</h2>
+            <h2 className="text-lg font-semibold text-on-surface">Alterar Senha</h2>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Senha atual</label>
+              <label className="block text-sm font-medium text-on-surface-variant">Senha atual</label>
               <input type="password" required value={currentPassword} onChange={e => setCurrentPassword(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Nova senha</label>
+              <label className="block text-sm font-medium text-on-surface-variant">Nova senha</label>
               <input type="password" required value={newPassword} onChange={e => setNewPassword(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                className="mt-1 block w-full rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary" />
             </div>
             <div className="flex gap-2">
               <Button type="submit" loading={saving}>Salvar</Button>

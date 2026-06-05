@@ -83,22 +83,22 @@ export function PedagogicoRelatoriosListagem() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Relatórios</h1>
+        <h1 className="text-2xl font-bold text-on-surface">Relatórios</h1>
       </div>
 
       <div className="mb-4 flex flex-wrap gap-3">
         <select value={filtroMunicipio} onChange={e => setFiltroMunicipio(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          className="rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
           <option value="">Todos os municípios</option>
           {municipios.map(m => <option key={m.id} value={m.id}>{m.nome}</option>)}
         </select>
         <select value={filtroAvaliacao} onChange={e => setFiltroAvaliacao(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          className="rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
           <option value="">Todas as avaliações</option>
           {avaliacoes.map(a => <option key={a.id} value={a.id}>{a.nome}</option>)}
         </select>
         <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          className="rounded border border-border-technical bg-surface px-3 py-2 text-sm text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
           <option value="">Todos os status</option>
           <option value="liberado">Liberados</option>
           <option value="pendente">Pendentes</option>
@@ -108,20 +108,20 @@ export function PedagogicoRelatoriosListagem() {
       {filtrados.length === 0 ? (
         <EmptyState message="Nenhum relatório encontrado." />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-border-technical bg-surface">
           <table className="w-full text-left text-sm">
-            <thead className="border-b bg-gray-50">
+            <thead className="border-b bg-surface-container-low">
               <tr>
-                <th className="px-4 py-3 font-medium text-gray-600">Município</th>
-                <th className="px-4 py-3 font-medium text-gray-600">Avaliação</th>
-                <th className="px-4 py-3 font-medium text-gray-600">Série</th>
-                <th className="px-4 py-3 font-medium text-gray-600">Status</th>
-                <th className="px-4 py-3 font-medium text-gray-600">Ações</th>
+                <th className="px-4 py-3 font-medium text-on-surface-variant">Município</th>
+                <th className="px-4 py-3 font-medium text-on-surface-variant">Avaliação</th>
+                <th className="px-4 py-3 font-medium text-on-surface-variant">Série</th>
+                <th className="px-4 py-3 font-medium text-on-surface-variant">Status</th>
+                <th className="px-4 py-3 font-medium text-on-surface-variant">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-border-technical">
               {filtrados.map(item => (
-                <tr key={item.id} className="hover:bg-gray-50">
+                <tr key={item.id} className="hover:bg-surface-container-low">
                   <td className="px-4 py-3">{getNomeMunicipio(item.municipioId)}</td>
                   <td className="px-4 py-3">{getNomeAvaliacao(item.avaliacaoId)}</td>
                   <td className="px-4 py-3">{getNomeSerie(item.serieId)}</td>
