@@ -35,7 +35,7 @@ export function RelatorioVisualizacao() {
   }, [id])
 
   if (loading) return <Spinner />
-  if (error) return <div className="p-stack-lg text-red-600">{error}</div>
+  if (error) return <div className="p-stack-lg text-error">{error}</div>
   if (!relatorio) return null
 
   return (
