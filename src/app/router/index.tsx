@@ -1,6 +1,7 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { PrivateRoute } from './PrivateRoute'
 import { LoginPage } from '@/pages/login'
+import { HomePage } from '@/pages/Home'
 import { RecuperarSenhaPage } from '@/pages/RecuperarSenha'
 import { PerfilPage } from '@/pages/Perfil'
 import { NotFoundPage } from '@/pages/NotFound'
@@ -72,7 +73,7 @@ export function AppRouter() {
         <Route path="relatorio/:id" element={<MunicipioRelatorioVisualizacao />} />
       </Route>
 
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<HomePage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
