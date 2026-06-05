@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isPedagogico() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'pedagogico';
+    }
+
+    function isMunicipio() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'municipio';
+    }
+
+    function getMunicipioId() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.municipioId;
+    }
+
+    match /municipios/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    match /avaliacoes/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    match /series/{id} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    match /relatorios/{id} {
+      allow read, write: if isAdmin();
+
+      allow read: if isPedagogico();
+      allow update: if isPedagogico()
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['liberado', 'liberadoEm', 'liberadoPor']);
+
+      allow read: if isMunicipio()
+        && resource.data.municipioId == getMunicipioId()
+        && resource.data.liberado == true;
+    }
+
+    match /users/{uid} {
+      allow read: if request.auth.uid == uid || isAdmin();
+      allow write: if isAdmin();
+    }
+  }
+}
