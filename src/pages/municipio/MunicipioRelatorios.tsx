@@ -12,8 +12,9 @@ import type { AvaliacaoData } from '@/api/avaliacoes';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
+
 export default function MunicipioRelatorios() {
-  const { profile } = useAuth();
+  const { profile, logout } = useAuth();
   const { toast } = useToast();
   const [relatorios, setRelatorios] = useState<RelatorioData[]>([]);
   const [avaliacoes, setAvaliacoes] = useState<AvaliacaoData[]>([]);
@@ -67,9 +68,9 @@ export default function MunicipioRelatorios() {
               </div>
               <span className="hidden sm:block font-medium">{profile?.nome || profile?.municipioNome}</span>
             </Link>
-            <Link to="/login" className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+            <button onClick={logout} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
               <LogOut className="w-4 h-4" />
-            </Link>
+            </button>
           </div>
         </div>
       </header>

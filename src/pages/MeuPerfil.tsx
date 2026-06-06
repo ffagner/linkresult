@@ -11,7 +11,7 @@ import StatusBadge from '@/components/lr/StatusBadge';
 export default function MeuPerfil() {
   const [searchParams] = useSearchParams();
   const roleParam: string = searchParams.get('role') || 'admin';
-  const { profile } = useAuth();
+  const { profile, logout } = useAuth();
 
   const [senhaAtual, setSenhaAtual] = useState<string>('');
   const [novaSenha, setNovaSenha] = useState<string>('');
@@ -131,12 +131,10 @@ export default function MeuPerfil() {
                   </div>
                 ) : 'Salvar nova senha'}
               </Button>
-              <Link to="/login">
-                <Button variant="outline" className="rounded-xl flex items-center gap-2">
-                  <LogOut className="w-4 h-4" />
-                  Sair
-                </Button>
-              </Link>
+              <Button onClick={logout} variant="outline" className="rounded-xl flex items-center gap-2">
+                <LogOut className="w-4 h-4" />
+                Sair
+              </Button>
             </div>
           </form>
         </div>
