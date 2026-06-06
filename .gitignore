@@ -21,3 +21,6 @@ dist/
 Thumbs.db
 
 AccountKey/
+
+# Local dev tool config (contains API keys)
+opencode.json
