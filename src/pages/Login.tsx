@@ -1,12 +1,19 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
+import { useAuth } from '@/lib/AuthContext'
 import { Eye, EyeOff, LogIn, AlertCircle } from 'lucide-react'
 import Logo from '@/components/lr/Logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+
+const roleHome: Record<string, string> = {
+  admin: '/admin',
+  pedagogico: '/pedagogico',
+  municipio: '/municipio',
+}
 
 export default function Login() {
   const [email, setEmail] = useState<string>('')
@@ -15,6 +22,13 @@ export default function Login() {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
   const navigate = useNavigate()
+  const { user, profile, loading: authLoading } = useAuth()
+
+  useEffect(() => {
+    if (!authLoading && user && profile) {
+      navigate(roleHome[profile.role as string] || '/admin', { replace: true })
+    }
+  }, [user, profile, authLoading, navigate])
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
@@ -24,10 +38,9 @@ export default function Login() {
 
     try {
       await signInWithEmailAndPassword(auth, email, senha)
-      navigate('/', { replace: true })
+      // navegação delegada ao useEffect acima — aguarda user + profile no contexto
     } catch {
       setError('Email ou senha inválidos.')
-    } finally {
       setLoading(false)
     }
   }
