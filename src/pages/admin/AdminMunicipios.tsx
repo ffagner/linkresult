@@ -17,14 +17,14 @@ import { useToast } from '@/hooks/use-toast';
 export default function AdminMunicipios() {
   const { profile } = useAuth();
   const { toast } = useToast();
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editItem, setEditItem] = useState(null);
-  const [deleteItem, setDeleteItem] = useState(null);
-  const [form, setForm] = useState({ nome: '', estado: '' });
-  const [saving, setSaving] = useState(false);
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [search, setSearch] = useState<string>('');
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [editItem, setEditItem] = useState<any>(null);
+  const [deleteItem, setDeleteItem] = useState<any>(null);
+  const [form, setForm] = useState<any>({ nome: '', estado: '' });
+  const [saving, setSaving] = useState<boolean>(false);
 
   useEffect(() => { listar().then(r => { setData(r); setLoading(false) }) }, []);
 
@@ -33,10 +33,10 @@ export default function AdminMunicipios() {
     m.estado.toLowerCase().includes(search.toLowerCase())
   );
 
-  const openCreate = () => { setEditItem(null); setForm({ nome: '', estado: '' }); setModalOpen(true); };
-  const openEdit = (item) => { setEditItem(item); setForm({ nome: item.nome, estado: item.estado }); setModalOpen(true); };
+  const openCreate = (): void => { setEditItem(null); setForm({ nome: '', estado: '' }); setModalOpen(true); };
+  const openEdit = (item: any): void => { setEditItem(item); setForm({ nome: item.nome, estado: item.estado }); setModalOpen(true); };
 
-  const handleSave = async (e) => {
+  const handleSave = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setSaving(true);
     try {
@@ -54,7 +54,7 @@ export default function AdminMunicipios() {
     finally { setSaving(false) }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     try {
       await excluir(deleteItem.id);
       setData(prev => prev.filter(m => m.id !== deleteItem.id));
@@ -96,7 +96,7 @@ export default function AdminMunicipios() {
 
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Buscar por nome ou estado..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
+        <Input placeholder="Buscar por nome ou estado..." value={search} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
       </div>
 
       <DataTable columns={columns} data={filtered} loading={loading} emptyTitle="Nenhum município encontrado" emptyDescription="Clique em 'Novo Município' para começar a cadastrar." />
@@ -105,11 +105,11 @@ export default function AdminMunicipios() {
         <form onSubmit={handleSave} className="space-y-4">
           <div className="space-y-1.5">
             <Label>Nome do município</Label>
-            <Input placeholder="Ex: Fortaleza" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} className="rounded-xl h-10" required />
+            <Input placeholder="Ex: Fortaleza" value={form.nome} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, nome: e.target.value }))} className="rounded-xl h-10" required />
           </div>
           <div className="space-y-1.5">
             <Label>Estado (UF)</Label>
-            <Select value={form.estado} onValueChange={v => setForm(f => ({ ...f, estado: v }))}>
+            <Select value={form.estado} onValueChange={(v: string) => setForm(f => ({ ...f, estado: v }))}>
               <SelectTrigger className="rounded-xl h-10">
                 <SelectValue placeholder="Selecione o estado" />
               </SelectTrigger>

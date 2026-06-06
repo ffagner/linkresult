@@ -5,7 +5,7 @@ async function getKey() {
   return crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt'])
 }
 
-export async function encryptLink(link) {
+export async function encryptLink(link: string): Promise<string> {
   const key = await getKey()
   const iv = crypto.getRandomValues(new Uint8Array(12))
   const encoded = new TextEncoder().encode(link)
@@ -16,7 +16,7 @@ export async function encryptLink(link) {
   return btoa(String.fromCharCode(...combined))
 }
 
-export async function decryptLink(encryptedBase64) {
+export async function decryptLink(encryptedBase64: string): Promise<string> {
   const key = await getKey()
   const combined = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0))
   const iv = combined.slice(0, 12)

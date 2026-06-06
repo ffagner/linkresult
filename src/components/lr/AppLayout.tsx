@@ -1,14 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import {
   LayoutDashboard, Building2, ClipboardList, BookOpen, Users, FileText,
-  LogOut, User, Menu, X, ChevronRight, BarChart3, CheckSquare
+  LogOut, User, Menu, X, ChevronRight, BarChart3, CheckSquare, type LucideIcon
 } from 'lucide-react';
 import Logo from './Logo';
 
-const adminNav = [
+interface NavItem {
+  label: string
+  href: string
+  icon: LucideIcon
+}
+
+const adminNav: NavItem[] = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { label: 'Municípios', href: '/admin/municipios', icon: Building2 },
   { label: 'Avaliações', href: '/admin/avaliacoes', icon: ClipboardList },
@@ -17,20 +23,26 @@ const adminNav = [
   { label: 'Usuários', href: '/admin/usuarios', icon: Users },
 ];
 
-const pedagogicoNav = [
+const pedagogicoNav: NavItem[] = [
   { label: 'Dashboard', href: '/pedagogico', icon: LayoutDashboard },
   { label: 'Relatórios', href: '/pedagogico/relatorios', icon: FileText },
 ];
 
-const municipioNav = [
+const municipioNav: NavItem[] = [
   { label: 'Meus Relatórios', href: '/municipio', icon: BarChart3 },
 ];
 
-const navByRole = { admin: adminNav, pedagogico: pedagogicoNav, municipio: municipioNav };
-const labelByRole = { admin: 'Admin', pedagogico: 'Pedagógico', municipio: 'Município' };
-const colorByRole = { admin: 'text-purple-400', pedagogico: 'text-blue-400', municipio: 'text-cyan-400' };
+const navByRole: Record<string, NavItem[]> = { admin: adminNav, pedagogico: pedagogicoNav, municipio: municipioNav };
+const labelByRole: Record<string, string> = { admin: 'Admin', pedagogico: 'Pedagógico', municipio: 'Município' };
+const colorByRole: Record<string, string> = { admin: 'text-purple-400', pedagogico: 'text-blue-400', municipio: 'text-cyan-400' };
 
-export default function AppLayout({ role = 'admin', userName = 'Usuário', children }) {
+interface AppLayoutProps {
+  role: string
+  userName: string
+  children: ReactNode
+}
+
+export default function AppLayout({ role = 'admin', userName = 'Usuário', children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -41,7 +53,7 @@ export default function AppLayout({ role = 'admin', userName = 'Usuário', child
     navigate('/login');
   }
 
-  const NavItem = ({ item }) => {
+  const NavItem = ({ item }: { item: NavItem }) => {
     const active = location.pathname === item.href || (item.href !== '/admin' && item.href !== '/pedagogico' && item.href !== '/municipio' && location.pathname.startsWith(item.href));
     const Icon = item.icon;
     return (

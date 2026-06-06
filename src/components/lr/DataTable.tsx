@@ -1,9 +1,25 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import LoadingSpinner from './LoadingSpinner';
 import EmptyState from './EmptyState';
 import { FileText } from 'lucide-react';
 
-export default function DataTable({ columns, data, loading, emptyTitle = 'Nenhum registro encontrado', emptyDescription = 'Não há dados para exibir.' }) {
+interface Column<T> {
+  header: string
+  key?: string
+  render?: (row: T) => ReactNode
+  className?: string
+  cellClassName?: string
+}
+
+interface DataTableProps<T> {
+  columns: Column<T>[]
+  data: T[]
+  loading?: boolean
+  emptyTitle?: string
+  emptyDescription?: string
+}
+
+export default function DataTable<T extends Record<string, unknown>>({ columns, data, loading, emptyTitle = 'Nenhum registro encontrado', emptyDescription = 'Não há dados para exibir.' }: DataTableProps<T>) {
   if (loading) return <LoadingSpinner text="Carregando dados..." />;
 
   if (!data || data.length === 0) {
@@ -36,7 +52,7 @@ export default function DataTable({ columns, data, loading, emptyTitle = 'Nenhum
               <tr key={ri} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
                 {columns.map((col, ci) => (
                   <td key={ci} className={`px-4 py-3.5 text-sm ${col.cellClassName || ''}`}>
-                    {col.render ? col.render(row) : row[col.key]}
+                    {col.render ? col.render(row) : (row[col.key] as ReactNode)}
                   </td>
                 ))}
               </tr>

@@ -22,20 +22,20 @@ import { useToast } from '@/hooks/use-toast';
 export default function AdminRelatorios() {
   const { profile } = useAuth();
   const { toast } = useToast();
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [municipios, setMunicipios] = useState([]);
-  const [avaliacoes, setAvaliacoes] = useState([]);
-  const [series, setSeries] = useState([]);
-  const [search, setSearch] = useState('');
-  const [filterMunicipio, setFilterMunicipio] = useState('todos');
-  const [filterAvaliacao, setFilterAvaliacao] = useState('todos');
-  const [filterStatus, setFilterStatus] = useState('todos');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editItem, setEditItem] = useState(null);
-  const [deleteItem, setDeleteItem] = useState(null);
-  const [form, setForm] = useState({ municipioId: '', avaliacaoId: '', serieId: '', link: '' });
-  const [saving, setSaving] = useState(false);
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [municipios, setMunicipios] = useState<any[]>([]);
+  const [avaliacoes, setAvaliacoes] = useState<any[]>([]);
+  const [series, setSeries] = useState<any[]>([]);
+  const [search, setSearch] = useState<string>('');
+  const [filterMunicipio, setFilterMunicipio] = useState<string>('todos');
+  const [filterAvaliacao, setFilterAvaliacao] = useState<string>('todos');
+  const [filterStatus, setFilterStatus] = useState<string>('todos');
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [editItem, setEditItem] = useState<any>(null);
+  const [deleteItem, setDeleteItem] = useState<any>(null);
+  const [form, setForm] = useState<any>({ municipioId: '', avaliacaoId: '', serieId: '', link: '' });
+  const [saving, setSaving] = useState<boolean>(false);
 
   useEffect(() => {
     Promise.all([
@@ -62,14 +62,14 @@ export default function AdminRelatorios() {
     return matchSearch && matchM && matchA && matchS;
   });
 
-  const openCreate = () => { setEditItem(null); setForm({ municipioId: '', avaliacaoId: '', serieId: '', link: '' }); setModalOpen(true); };
-  const openEdit = (item) => {
+  const openCreate = (): void => { setEditItem(null); setForm({ municipioId: '', avaliacaoId: '', serieId: '', link: '' }); setModalOpen(true); };
+  const openEdit = (item: any): void => {
     setEditItem(item);
     setForm({ municipioId: item.municipioId, avaliacaoId: item.avaliacaoId, serieId: item.serieId, link: '' });
     setModalOpen(true);
   };
 
-  const handleSave = async (e) => {
+  const handleSave = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setSaving(true);
     try {
@@ -78,7 +78,7 @@ export default function AdminRelatorios() {
       const ava = avaliacoes.find(a => a.id === form.avaliacaoId);
       const ser = series.find(s => s.id === form.serieId);
       if (editItem) {
-        const updateData = {};
+        const updateData: any = {};
         if (form.municipioId) { updateData.municipioId = form.municipioId; updateData.municipioNome = mun?.nome; }
         if (form.avaliacaoId) { updateData.avaliacaoId = form.avaliacaoId; updateData.avaliacaoNome = ava?.nome; }
         if (form.serieId) { updateData.serieId = form.serieId; updateData.serieNome = ser?.nome; }
@@ -106,7 +106,7 @@ export default function AdminRelatorios() {
     finally { setSaving(false) }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     try {
       await excluir(deleteItem.id);
       setData(prev => prev.filter(r => r.id !== deleteItem.id));
@@ -164,7 +164,7 @@ export default function AdminRelatorios() {
       <div className="flex flex-wrap gap-3 mb-4">
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
+          <Input placeholder="Buscar..." value={search} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
         </div>
         <Select value={filterMunicipio} onValueChange={setFilterMunicipio}>
           <SelectTrigger className="w-44 h-10 rounded-xl">

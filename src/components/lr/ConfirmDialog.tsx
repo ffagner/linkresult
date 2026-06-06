@@ -2,7 +2,17 @@ import React from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export default function ConfirmDialog({ open, onClose, onConfirm, title, description, confirmLabel = 'Confirmar', variant = 'destructive' }) {
+interface ConfirmDialogProps {
+  open: boolean
+  onClose: () => void
+  onConfirm: () => void
+  title: string
+  description: string
+  confirmLabel?: string
+  variant?: 'destructive' | 'default'
+}
+
+export default function ConfirmDialog({ open, onClose, onConfirm, title, description, confirmLabel = 'Confirmar', variant = 'destructive' }: ConfirmDialogProps) {
   if (!open) return null;
 
   return (

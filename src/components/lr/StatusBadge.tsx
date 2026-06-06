@@ -1,7 +1,13 @@
 import React from 'react';
-import { CheckCircle2, Clock, XCircle, ShieldAlert } from 'lucide-react';
+import { CheckCircle2, Clock, XCircle, ShieldAlert, type LucideIcon } from 'lucide-react';
 
-const variants = {
+interface Variant {
+  label: string
+  icon?: LucideIcon
+  className: string
+}
+
+const variants: Record<string, Variant> = {
   liberado: {
     label: 'Liberado',
     icon: CheckCircle2,
@@ -41,7 +47,12 @@ const variants = {
   },
 };
 
-export default function StatusBadge({ status, className = '' }) {
+interface StatusBadgeProps {
+  status: string
+  className?: string
+}
+
+export default function StatusBadge({ status, className = '' }: StatusBadgeProps) {
   const v = variants[status] || variants.pendente;
   const Icon = v.icon;
 

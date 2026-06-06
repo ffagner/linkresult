@@ -10,13 +10,13 @@ import AuthLayout from "@/components/AuthLayout";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
-  const resetToken = searchParams.get("token");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const resetToken: string | null = searchParams.get("token");
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setError("");
     if (newPassword !== confirmPassword) {
@@ -25,7 +25,7 @@ export default function ResetPassword() {
     }
     setLoading(true);
     try {
-      await confirmPasswordReset(resetToken, newPassword);
+      await confirmPasswordReset(auth, resetToken, newPassword);
       window.location.href = "/login";
     } catch (err) {
       setError(err.message || "Falha ao redefinir senha");
@@ -68,7 +68,7 @@ export default function ResetPassword() {
             <Input
               id="password" type="password" autoComplete="new-password" autoFocus
               placeholder="••••••••" value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
               className="pl-10 h-12" required
             />
           </div>
@@ -80,7 +80,7 @@ export default function ResetPassword() {
             <Input
               id="confirm" type="password" autoComplete="new-password"
               placeholder="••••••••" value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
               className="pl-10 h-12" required
             />
           </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FileText, CheckCircle2, Clock, ArrowRight, Eye } from 'lucide-react';
 import { listar as listarRelatorios } from '@/api/relatorios';
+import type { RelatorioData } from '@/api/relatorios';
 import { useAuth } from '@/lib/AuthContext';
 import AppLayout from '@/components/lr/AppLayout';
 import StatsCard from '@/components/lr/StatsCard';
@@ -11,11 +12,11 @@ import LoadingSpinner from '@/components/lr/LoadingSpinner';
 
 export default function PedagogicoDashboard() {
   const { profile } = useAuth();
-  const [total, setTotal] = useState(0);
-  const [liberados, setLiberados] = useState(0);
-  const [pendentes, setPendentes] = useState(0);
-  const [recentes, setRecentes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState<number>(0);
+  const [liberados, setLiberados] = useState<number>(0);
+  const [pendentes, setPendentes] = useState<number>(0);
+  const [recentes, setRecentes] = useState<RelatorioData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     listarRelatorios().then(r => {

@@ -9,14 +9,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 export default function Login() {
-  const [email, setEmail] = useState('')
-  const [senha, setSenha] = useState('')
-  const [showSenha, setShowSenha] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [email, setEmail] = useState<string>('')
+  const [senha, setSenha] = useState<string>('')
+  const [showSenha, setShowSenha] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string>('')
   const navigate = useNavigate()
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
     if (!email || !senha) { setError('Preencha todos os campos.'); return }
     setLoading(true)
@@ -65,7 +65,7 @@ export default function Login() {
                 type="email"
                 placeholder="seu@email.com.br"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                 className="h-11 rounded-xl"
                 disabled={loading}
               />
@@ -79,7 +79,7 @@ export default function Login() {
                   type={showSenha ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={senha}
-                  onChange={e => setSenha(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSenha(e.target.value)}
                   className="h-11 rounded-xl pr-11"
                   disabled={loading}
                 />

@@ -8,22 +8,25 @@ import StatusBadge from '@/components/lr/StatusBadge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { listar, liberar } from '@/api/relatorios';
+import type { RelatorioData } from '@/api/relatorios';
 import { listar as listarMunicipios } from '@/api/municipios';
+import type { MunicipioData } from '@/api/municipios';
 import { listar as listarAvaliacoes } from '@/api/avaliacoes';
+import type { AvaliacaoData } from '@/api/avaliacoes';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 export default function PedagogicoRelatorios() {
   const { profile } = useAuth();
   const { toast } = useToast();
-  const [data, setData] = useState([]);
-  const [municipios, setMunicipios] = useState([]);
-  const [avaliacoes, setAvaliacoes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [filterMunicipio, setFilterMunicipio] = useState('todos');
-  const [filterStatus, setFilterStatus] = useState('todos');
-  const [updatingId, setUpdatingId] = useState(null);
+  const [data, setData] = useState<RelatorioData[]>([]);
+  const [municipios, setMunicipios] = useState<MunicipioData[]>([]);
+  const [avaliacoes, setAvaliacoes] = useState<AvaliacaoData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [search, setSearch] = useState<string>('');
+  const [filterMunicipio, setFilterMunicipio] = useState<string>('todos');
+  const [filterStatus, setFilterStatus] = useState<string>('todos');
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -54,7 +57,7 @@ export default function PedagogicoRelatorios() {
     return matchSearch && matchM && matchS;
   });
 
-  const handleToggle = async (r) => {
+  const handleToggle = async (r: RelatorioData): Promise<void> => {
     setUpdatingId(r.id);
     try {
       const novoValor = !r.liberado;
@@ -116,7 +119,7 @@ export default function PedagogicoRelatorios() {
       <div className="flex flex-wrap gap-3 mb-4">
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
+          <Input placeholder="Buscar..." value={search} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
         </div>
         <Select value={filterMunicipio} onValueChange={setFilterMunicipio}>
           <SelectTrigger className="w-44 h-10 rounded-xl"><SelectValue placeholder="Município" /></SelectTrigger>

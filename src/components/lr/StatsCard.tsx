@@ -1,6 +1,15 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
+import type { ComponentType } from 'react';
 
-export default function StatsCard({ label, value, icon: Icon, color = 'blue', trend }) {
+interface StatsCardProps {
+  label: string
+  value: number
+  icon: ComponentType<{ className?: string }>
+  color: string
+  trend?: ReactNode
+}
+
+export default function StatsCard({ label, value, icon: Icon, color = 'blue', trend }: StatsCardProps) {
   const colors = {
     blue: { bg: 'bg-blue-50', icon: 'text-blue-600', border: 'border-blue-100' },
     green: { bg: 'bg-green-50', icon: 'text-green-600', border: 'border-green-100' },

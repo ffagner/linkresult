@@ -18,15 +18,15 @@ export default function AdminRelatoriosLote() {
   const { profile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [municipios, setMunicipios] = useState([]);
-  const [avaliacoes, setAvaliacoes] = useState([]);
-  const [series, setSeries] = useState([]);
-  const [municipioId, setMunicipioId] = useState('');
-  const [avaliacaoId, setAvaliacaoId] = useState('');
-  const [items, setItems] = useState([{ serieId: '', link: '', id: Date.now() }]);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [municipios, setMunicipios] = useState<any[]>([]);
+  const [avaliacoes, setAvaliacoes] = useState<any[]>([]);
+  const [series, setSeries] = useState<any[]>([]);
+  const [municipioId, setMunicipioId] = useState<string>('');
+  const [avaliacaoId, setAvaliacaoId] = useState<string>('');
+  const [items, setItems] = useState<any[]>([{ serieId: '', link: '', id: Date.now() }]);
+  const [saving, setSaving] = useState<boolean>(false);
+  const [saved, setSaved] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
 
   useEffect(() => {
     Promise.all([
@@ -40,17 +40,17 @@ export default function AdminRelatoriosLote() {
     });
   }, []);
 
-  const addItem = () => setItems(prev => [...prev, { serieId: '', link: '', id: Date.now() }]);
-  const removeItem = (id) => setItems(prev => prev.filter(i => i.id !== id));
-  const updateItem = (id, field, value) => setItems(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i));
+  const addItem = (): void => setItems(prev => [...prev, { serieId: '', link: '', id: Date.now() }]);
+  const removeItem = (id: any): void => setItems(prev => prev.filter(i => i.id !== id));
+  const updateItem = (id: any, field: any, value: any): void => setItems(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i));
 
-  const handleSave = async (e) => {
+  const handleSave = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setSaving(true);
     try {
       const mun = municipios.find(m => m.id === municipioId);
       const ava = avaliacoes.find(a => a.id === avaliacaoId);
-      const itens = await Promise.all(items.map(async (item) => {
+      const itens = await Promise.all(items.map(async (item: any) => {
         const ser = series.find(s => s.id === item.serieId);
         return {
           serieId: item.serieId,
@@ -161,7 +161,7 @@ export default function AdminRelatoriosLote() {
                           type="url"
                           placeholder="https://app.powerbi.com/..."
                           value={item.link}
-                          onChange={e => updateItem(item.id, 'link', e.target.value)}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateItem(item.id, 'link', e.target.value)}
                           className="rounded-lg h-9 text-sm pl-8"
                         />
                       </div>

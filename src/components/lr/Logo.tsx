@@ -1,6 +1,11 @@
 import React from 'react';
 
-export default function Logo({ size = 'md', variant = 'full' }) {
+interface LogoProps {
+  size?: 'sm' | 'md' | 'lg'
+  variant?: 'full' | 'icon'
+}
+
+export default function Logo({ size = 'md', variant = 'full' }: LogoProps) {
   const sizes = {
     sm: { icon: 28, text: 'text-base' },
     md: { icon: 36, text: 'text-xl' },

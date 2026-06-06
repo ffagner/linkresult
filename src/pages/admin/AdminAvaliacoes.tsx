@@ -16,15 +16,15 @@ import { useToast } from '@/hooks/use-toast';
 export default function AdminAvaliacoes() {
   const { profile } = useAuth();
   const { toast } = useToast();
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [filterAno, setFilterAno] = useState('todos');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editItem, setEditItem] = useState(null);
-  const [deleteItem, setDeleteItem] = useState(null);
-  const [form, setForm] = useState({ nome: '', ano: '' });
-  const [saving, setSaving] = useState(false);
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [search, setSearch] = useState<string>('');
+  const [filterAno, setFilterAno] = useState<string>('todos');
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [editItem, setEditItem] = useState<any>(null);
+  const [deleteItem, setDeleteItem] = useState<any>(null);
+  const [form, setForm] = useState<any>({ nome: '', ano: '' });
+  const [saving, setSaving] = useState<boolean>(false);
 
   useEffect(() => { listar().then(r => { setData(r); setLoading(false) }) }, []);
 
@@ -36,10 +36,10 @@ export default function AdminAvaliacoes() {
     return matchSearch && matchAno;
   });
 
-  const openCreate = () => { setEditItem(null); setForm({ nome: '', ano: '' }); setModalOpen(true); };
-  const openEdit = (item) => { setEditItem(item); setForm({ nome: item.nome, ano: String(item.ano) }); setModalOpen(true); };
+  const openCreate = (): void => { setEditItem(null); setForm({ nome: '', ano: '' }); setModalOpen(true); };
+  const openEdit = (item: any): void => { setEditItem(item); setForm({ nome: item.nome, ano: String(item.ano) }); setModalOpen(true); };
 
-  const handleSave = async (e) => {
+  const handleSave = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setSaving(true);
     try {
@@ -57,7 +57,7 @@ export default function AdminAvaliacoes() {
     finally { setSaving(false) }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     try {
       await excluir(deleteItem.id);
       setData(prev => prev.filter(a => a.id !== deleteItem.id));
@@ -103,7 +103,7 @@ export default function AdminAvaliacoes() {
       <div className="flex gap-3 mb-4 flex-wrap">
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Buscar por nome..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
+          <Input placeholder="Buscar por nome..." value={search} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
         </div>
         <Select value={filterAno} onValueChange={setFilterAno}>
           <SelectTrigger className="w-36 h-10 rounded-xl">
@@ -127,11 +127,11 @@ export default function AdminAvaliacoes() {
         <form onSubmit={handleSave} className="space-y-4">
           <div className="space-y-1.5">
             <Label>Nome da avaliação</Label>
-            <Input placeholder="Ex: CADERNO 1" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} className="rounded-xl h-10" required />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Ano</Label>
-            <Input type="number" placeholder="2025" value={form.ano} onChange={e => setForm(f => ({ ...f, ano: e.target.value }))} className="rounded-xl h-10" required />
+            <Input placeholder="Ex: CADERNO 1" value={form.nome} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, nome: e.target.value }))} className="rounded-xl h-10" required />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Ano</Label>
+              <Input type="number" placeholder="2025" value={form.ano} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, ano: e.target.value }))} className="rounded-xl h-10" required />
           </div>
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="outline" className="flex-1 rounded-xl" onClick={() => setModalOpen(false)}>Cancelar</Button>

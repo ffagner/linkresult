@@ -18,16 +18,16 @@ import { useToast } from '@/hooks/use-toast';
 export default function AdminUsuarios() {
   const { profile } = useAuth();
   const { toast } = useToast();
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [municipios, setMunicipios] = useState([]);
-  const [search, setSearch] = useState('');
-  const [filterRole, setFilterRole] = useState('todos');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editItem, setEditItem] = useState(null);
-  const [toggleItem, setToggleItem] = useState(null);
-  const [form, setForm] = useState({ nome: '', email: '', senha: '', role: 'municipio', municipioId: '' });
-  const [saving, setSaving] = useState(false);
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [municipios, setMunicipios] = useState<any[]>([]);
+  const [search, setSearch] = useState<string>('');
+  const [filterRole, setFilterRole] = useState<string>('todos');
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [editItem, setEditItem] = useState<any>(null);
+  const [toggleItem, setToggleItem] = useState<any>(null);
+  const [form, setForm] = useState<any>({ nome: '', email: '', senha: '', role: 'municipio', municipioId: '' });
+  const [saving, setSaving] = useState<boolean>(false);
 
   useEffect(() => {
     Promise.all([listar(), listarMunicipios()]).then(([users, muns]) => {
@@ -43,16 +43,16 @@ export default function AdminUsuarios() {
     return matchSearch && matchRole;
   });
 
-  const openCreate = () => { setEditItem(null); setForm({ nome: '', email: '', senha: '', role: 'municipio', municipioId: '' }); setModalOpen(true); };
-  const openEdit = (u) => { setEditItem(u); setForm({ nome: u.nome, email: u.email, senha: '', role: u.role, municipioId: u.municipioId || '' }); setModalOpen(true); };
+  const openCreate = (): void => { setEditItem(null); setForm({ nome: '', email: '', senha: '', role: 'municipio', municipioId: '' }); setModalOpen(true); };
+  const openEdit = (u: any): void => { setEditItem(u); setForm({ nome: u.nome, email: u.email, senha: '', role: u.role, municipioId: u.municipioId || '' }); setModalOpen(true); };
 
-  const handleSave = async (e) => {
+  const handleSave = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setSaving(true);
     try {
       const mun = municipios.find(m => m.id === form.municipioId);
       if (editItem) {
-        const updateData = { nome: form.nome, email: form.email, role: form.role, municipioId: form.municipioId || null, municipioNome: mun?.nome || null };
+        const updateData: any = { nome: form.nome, email: form.email, role: form.role, municipioId: form.municipioId || null, municipioNome: mun?.nome || null };
         await atualizar(editItem.uid, updateData);
         setData(prev => prev.map(u => u.uid === editItem.uid ? { ...u, ...updateData } : u));
         toast({ title: 'Usuário atualizado', variant: 'edit' });
@@ -67,7 +67,7 @@ export default function AdminUsuarios() {
     finally { setSaving(false) }
   };
 
-  const handleToggleStatus = async () => {
+  const handleToggleStatus = async (): Promise<void> => {
     const novoStatus = toggleItem.status === 'ativo' ? 'inativo' : 'ativo';
     try {
       await atualizar(toggleItem.uid, { status: novoStatus });
@@ -123,7 +123,7 @@ export default function AdminUsuarios() {
       <div className="flex flex-wrap gap-3 mb-4">
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Buscar por nome ou e-mail..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
+          <Input placeholder="Buscar por nome ou e-mail..." value={search} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
         </div>
         <Select value={filterRole} onValueChange={setFilterRole}>
           <SelectTrigger className="w-36 h-10 rounded-xl">

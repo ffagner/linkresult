@@ -4,16 +4,17 @@ import { ArrowLeft, AlertCircle, ShieldCheck } from 'lucide-react';
 import Logo from '@/components/lr/Logo';
 import LoadingSpinner from '@/components/lr/LoadingSpinner';
 import { buscar as buscarRelatorio } from '@/api/relatorios';
+import type { RelatorioData } from '@/api/relatorios';
 import { decryptLink } from '@/lib/crypto';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function MunicipioReportViewer() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { profile } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const [relatorio, setRelatorio] = useState(null);
-  const [decryptedLink, setDecryptedLink] = useState('');
-  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [relatorio, setRelatorio] = useState<RelatorioData | null>(null);
+  const [decryptedLink, setDecryptedLink] = useState<string>('');
+  const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
     async function load() {

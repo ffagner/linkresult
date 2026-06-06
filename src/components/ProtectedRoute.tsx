@@ -1,13 +1,19 @@
+import type { ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/lib/AuthContext'
 
-const roleHome = {
+const roleHome: Record<string, string> = {
   admin: '/admin',
   pedagogico: '/pedagogico',
   municipio: '/municipio',
 }
 
-export default function ProtectedRoute({ children, allowedRoles = [] }) {
+interface ProtectedRouteProps {
+  children: ReactNode
+  allowedRoles?: string[]
+}
+
+export default function ProtectedRoute({ children, allowedRoles = [] }: ProtectedRouteProps) {
   const { user, profile, loading } = useAuth()
 
   if (loading) {

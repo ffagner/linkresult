@@ -21,9 +21,9 @@ const quickActions = [
 
 export default function AdminDashboard() {
   const { profile } = useAuth();
-  const [stats, setStats] = useState({ municipios: 0, avaliacoes: 0, liberados: 0, pendentes: 0 });
-  const [recentes, setRecentes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<any>({ municipios: 0, avaliacoes: 0, liberados: 0, pendentes: 0 });
+  const [recentes, setRecentes] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     Promise.all([listarMunicipios(), listarAvaliacoes(), listarRelatorios()]).then(([m, a, r]) => {

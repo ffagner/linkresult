@@ -6,17 +6,19 @@ import EmptyState from '@/components/lr/EmptyState';
 import LoadingSpinner from '@/components/lr/LoadingSpinner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { listarPorMunicipio as listarRelatoriosPorMunicipio } from '@/api/relatorios';
+import type { RelatorioData } from '@/api/relatorios';
 import { listar as listarAvaliacoes } from '@/api/avaliacoes';
+import type { AvaliacaoData } from '@/api/avaliacoes';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 export default function MunicipioRelatorios() {
   const { profile } = useAuth();
   const { toast } = useToast();
-  const [relatorios, setRelatorios] = useState([]);
-  const [avaliacoes, setAvaliacoes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filterAvaliacao, setFilterAvaliacao] = useState('todos');
+  const [relatorios, setRelatorios] = useState<RelatorioData[]>([]);
+  const [avaliacoes, setAvaliacoes] = useState<AvaliacaoData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [filterAvaliacao, setFilterAvaliacao] = useState<string>('todos');
 
   useEffect(() => {
     async function load() {
@@ -40,7 +42,7 @@ export default function MunicipioRelatorios() {
     filterAvaliacao === 'todos' || r.avaliacaoId === filterAvaliacao
   );
 
-  const grouped = filtered.reduce((acc, r) => {
+  const grouped = filtered.reduce<Record<string, { avaliacaoNome: string; items: RelatorioData[] }>>((acc, r) => {
     const key = r.avaliacaoId;
     if (!acc[key]) acc[key] = { avaliacaoNome: r.avaliacaoNome, items: [] };
     acc[key].items.push(r);

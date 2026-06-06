@@ -1,6 +1,11 @@
 import React from 'react';
 
-export default function LoadingSpinner({ size = 'md', text }) {
+interface LoadingSpinnerProps {
+  size?: 'sm' | 'md' | 'lg'
+  text?: string
+}
+
+export default function LoadingSpinner({ size = 'md', text }: LoadingSpinnerProps) {
   const sizes = { sm: 'w-4 h-4', md: 'w-6 h-6', lg: 'w-10 h-10' };
   
   return (

@@ -1,6 +1,12 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 
-export default function PageHeader({ title, subtitle, actions }) {
+interface PageHeaderProps {
+  title: string
+  subtitle?: string
+  actions?: ReactNode
+}
+
+export default function PageHeader({ title, subtitle, actions }: PageHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <div>

@@ -10,17 +10,17 @@ import StatusBadge from '@/components/lr/StatusBadge';
 
 export default function MeuPerfil() {
   const [searchParams] = useSearchParams();
-  const roleParam = searchParams.get('role') || 'admin';
+  const roleParam: string = searchParams.get('role') || 'admin';
   const { profile } = useAuth();
 
-  const [senhaAtual, setSenhaAtual] = useState('');
-  const [novaSenha, setNovaSenha] = useState('');
-  const [confirmarSenha, setConfirmarSenha] = useState('');
-  const [showSenhas, setShowSenhas] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [senhaAtual, setSenhaAtual] = useState<string>('');
+  const [novaSenha, setNovaSenha] = useState<string>('');
+  const [confirmarSenha, setConfirmarSenha] = useState<string>('');
+  const [showSenhas, setShowSenhas] = useState<boolean>(false);
+  const [saving, setSaving] = useState<boolean>(false);
+  const [success, setSuccess] = useState<boolean>(false);
 
-  const handleAlterarSenha = async (e) => {
+  const handleAlterarSenha = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setSaving(true);
     // lógica a implementar: updatePassword
@@ -112,7 +112,7 @@ export default function MeuPerfil() {
                     type={showSenhas ? 'text' : 'password'}
                     placeholder="••••••••"
                     value={field.value}
-                    onChange={e => field.set(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => field.set(e.target.value)}
                     className="h-10 rounded-xl pr-10"
                   />
                   <button type="button" onClick={() => setShowSenhas(!showSenhas)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">

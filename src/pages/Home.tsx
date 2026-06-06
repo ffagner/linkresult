@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/lib/AuthContext'
 
-const roleHome = {
+const roleHome: Record<string, string> = {
   admin: '/admin',
   pedagogico: '/pedagogico',
   municipio: '/municipio',

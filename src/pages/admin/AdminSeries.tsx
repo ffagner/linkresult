@@ -14,20 +14,20 @@ import { useToast } from '@/hooks/use-toast';
 export default function AdminSeries() {
   const { profile } = useAuth();
   const { toast } = useToast();
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editItem, setEditItem] = useState(null);
-  const [deleteItem, setDeleteItem] = useState(null);
-  const [form, setForm] = useState({ nome: '', ordem: '' });
-  const [saving, setSaving] = useState(false);
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [editItem, setEditItem] = useState<any>(null);
+  const [deleteItem, setDeleteItem] = useState<any>(null);
+  const [form, setForm] = useState<any>({ nome: '', ordem: '' });
+  const [saving, setSaving] = useState<boolean>(false);
 
   useEffect(() => { listar().then(r => { setData(r); setLoading(false) }) }, []);
 
-  const openCreate = () => { setEditItem(null); setForm({ nome: '', ordem: String(data.length + 1) }); setModalOpen(true); };
-  const openEdit = (item) => { setEditItem(item); setForm({ nome: item.nome, ordem: String(item.ordem) }); setModalOpen(true); };
+  const openCreate = (): void => { setEditItem(null); setForm({ nome: '', ordem: String(data.length + 1) }); setModalOpen(true); };
+  const openEdit = (item: any): void => { setEditItem(item); setForm({ nome: item.nome, ordem: String(item.ordem) }); setModalOpen(true); };
 
-  const handleSave = async (e) => {
+  const handleSave = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setSaving(true);
     try {
@@ -45,7 +45,7 @@ export default function AdminSeries() {
     finally { setSaving(false) }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     try {
       await excluir(deleteItem.id);
       setData(prev => prev.filter(s => s.id !== deleteItem.id));
@@ -111,11 +111,11 @@ export default function AdminSeries() {
         <form onSubmit={handleSave} className="space-y-4">
           <div className="space-y-1.5">
             <Label>Nome da série</Label>
-            <Input placeholder="Ex: 3º ano" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} className="rounded-xl h-10" required />
+            <Input placeholder="Ex: 3º ano" value={form.nome} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, nome: e.target.value }))} className="rounded-xl h-10" required />
           </div>
           <div className="space-y-1.5">
             <Label>Ordem de exibição</Label>
-            <Input type="number" min="1" value={form.ordem} onChange={e => setForm(f => ({ ...f, ordem: e.target.value }))} className="rounded-xl h-10" required />
+            <Input type="number" min="1" value={form.ordem} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, ordem: e.target.value }))} className="rounded-xl h-10" required />
             <p className="text-xs text-muted-foreground">Define a posição na listagem (1 = primeiro)</p>
           </div>
           <div className="flex gap-3 pt-2">

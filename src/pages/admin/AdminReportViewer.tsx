@@ -10,10 +10,10 @@ import { decryptLink } from '@/lib/crypto';
 export default function AdminReportViewer() {
   const { id } = useParams();
   const { profile } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const [relatorio, setRelatorio] = useState(null);
-  const [embedUrl, setEmbedUrl] = useState(null);
-  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [relatorio, setRelatorio] = useState<any>(null);
+  const [embedUrl, setEmbedUrl] = useState<any>(null);
+  const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
     async function load() {

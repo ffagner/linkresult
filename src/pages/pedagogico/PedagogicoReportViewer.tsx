@@ -6,19 +6,20 @@ import StatusBadge from '@/components/lr/StatusBadge';
 import LoadingSpinner from '@/components/lr/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { buscar as buscarRelatorio, liberar } from '@/api/relatorios';
+import type { RelatorioData } from '@/api/relatorios';
 import { decryptLink } from '@/lib/crypto';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 export default function PedagogicoReportViewer() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { profile } = useAuth();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [relatorio, setRelatorio] = useState(null);
-  const [decryptedLink, setDecryptedLink] = useState('');
-  const [toggling, setToggling] = useState(false);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [relatorio, setRelatorio] = useState<RelatorioData | null>(null);
+  const [decryptedLink, setDecryptedLink] = useState<string>('');
+  const [toggling, setToggling] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     async function load() {
@@ -41,7 +42,7 @@ export default function PedagogicoReportViewer() {
     load();
   }, [id]);
 
-  const handleToggle = async () => {
+  const handleToggle = async (): Promise<void> => {
     setToggling(true);
     try {
       const novoValor = !relatorio.liberado;

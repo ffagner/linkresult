@@ -1,7 +1,16 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import { X } from 'lucide-react';
 
-export default function FormModal({ open, onClose, title, subtitle, children, size = 'md' }) {
+interface FormModalProps {
+  open: boolean
+  onClose: () => void
+  title: string
+  subtitle?: string
+  children: ReactNode
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+}
+
+export default function FormModal({ open, onClose, title, subtitle, children, size = 'md' }: FormModalProps) {
   if (!open) return null;
 
   const sizes = {
