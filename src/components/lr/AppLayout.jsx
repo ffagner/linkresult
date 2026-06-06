@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import {
   LayoutDashboard, Building2, ClipboardList, BookOpen, Users, FileText,
   LogOut, User, Menu, X, ChevronRight, BarChart3, CheckSquare
@@ -31,7 +33,13 @@ const colorByRole = { admin: 'text-purple-400', pedagogico: 'text-blue-400', mun
 export default function AppLayout({ role = 'admin', userName = 'Usuário', children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const navItems = navByRole[role] || adminNav;
+
+  async function handleLogout() {
+    await signOut(auth);
+    navigate('/login');
+  }
 
   const NavItem = ({ item }) => {
     const active = location.pathname === item.href || (item.href !== '/admin' && item.href !== '/pedagogico' && item.href !== '/municipio' && location.pathname.startsWith(item.href));
@@ -76,10 +84,10 @@ export default function AppLayout({ role = 'admin', userName = 'Usuário', child
             <div className={`text-xs ${colorByRole[role]}`}>{labelByRole[role]}</div>
           </div>
         </Link>
-        <Link to="/login" className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-sidebar-foreground hover:bg-red-500/10 hover:text-red-400 transition-colors">
+        <button onClick={handleLogout} className="flex w-full items-center gap-3 px-3 py-2 rounded-xl text-sm text-sidebar-foreground hover:bg-red-500/10 hover:text-red-400 transition-colors">
           <LogOut className="w-4 h-4" />
           <span>Sair</span>
-        </Link>
+        </button>
       </div>
     </div>
   );
