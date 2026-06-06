@@ -1,7 +1,6 @@
 import React, { useState, type ReactNode } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '@/lib/AuthContext';
 import {
   LayoutDashboard, Building2, ClipboardList, BookOpen, Users, FileText,
   LogOut, User, Menu, X, ChevronRight, BarChart3, CheckSquare, type LucideIcon
@@ -45,12 +44,12 @@ interface AppLayoutProps {
 export default function AppLayout({ role = 'admin', userName = 'Usuário', children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
   const navItems = navByRole[role] || adminNav;
+  const { logout } = useAuth();
 
   async function handleLogout() {
-    await signOut(auth);
-    navigate('/login');
+    await logout();
+    // ProtectedRoute detecta user=null e redireciona para /login automaticamente
   }
 
   const NavItem = ({ item }: { item: NavItem }) => {
