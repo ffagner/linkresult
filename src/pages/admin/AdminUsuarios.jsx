@@ -55,12 +55,12 @@ export default function AdminUsuarios() {
         const updateData = { nome: form.nome, email: form.email, role: form.role, municipioId: form.municipioId || null, municipioNome: mun?.nome || null };
         await atualizar(editItem.uid, updateData);
         setData(prev => prev.map(u => u.uid === editItem.uid ? { ...u, ...updateData } : u));
-        toast({ title: 'Usuário atualizado' });
+        toast({ title: 'Usuário atualizado', variant: 'edit' });
       } else {
         await criar({ ...form, municipioNome: mun?.nome || null });
         const refetched = await listar();
         setData(refetched);
-        toast({ title: 'Usuário criado' });
+        toast({ title: 'Usuário criado', variant: 'create' });
       }
       setModalOpen(false);
     } catch { toast({ title: 'Erro ao salvar', variant: 'destructive' }) }
@@ -72,7 +72,7 @@ export default function AdminUsuarios() {
     try {
       await atualizar(toggleItem.uid, { status: novoStatus });
       setData(prev => prev.map(u => u.uid === toggleItem.uid ? { ...u, status: novoStatus } : u));
-      toast({ title: `Usuário ${novoStatus === 'ativo' ? 'reativado' : 'desativado'}` });
+      toast({ title: `Usuário ${novoStatus === 'ativo' ? 'reativado' : 'desativado'}`, variant: 'delete' });
     } catch { toast({ title: 'Erro ao alterar status', variant: 'destructive' }) }
     setToggleItem(null);
   };

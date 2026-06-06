@@ -67,7 +67,7 @@ export default function AdminRelatoriosLote() {
       });
       setSaving(false);
       setSaved(true);
-      toast({ title: `${items.length} relatório(s) salvos com sucesso` });
+      toast({ title: `${items.length} relatório(s) salvos com sucesso`, variant: 'create' });
       setTimeout(() => navigate('/admin/relatorios'), 2000);
     } catch {
       toast({ title: 'Erro ao salvar relatórios', variant: 'destructive' });

@@ -85,7 +85,7 @@ export default function AdminRelatorios() {
         if (linkEncriptado) updateData.linkEncriptado = linkEncriptado;
         await atualizar(editItem.id, updateData);
         setData(prev => prev.map(r => r.id === editItem.id ? { ...r, ...updateData } : r));
-        toast({ title: 'Relatório atualizado' });
+        toast({ title: 'Relatório atualizado', variant: 'edit' });
       } else {
         const id = await criar({
           municipioId: form.municipioId, municipioNome: mun?.nome,
@@ -99,7 +99,7 @@ export default function AdminRelatorios() {
           serieId: form.serieId, serieNome: ser?.nome,
           liberado: false, liberadoEm: null, createdAt: new Date().toISOString().split('T')[0],
         }, ...prev]);
-        toast({ title: 'Relatório criado' });
+        toast({ title: 'Relatório criado', variant: 'create' });
       }
       setModalOpen(false);
     } catch { toast({ title: 'Erro ao salvar', variant: 'destructive' }) }
@@ -110,7 +110,7 @@ export default function AdminRelatorios() {
     try {
       await excluir(deleteItem.id);
       setData(prev => prev.filter(r => r.id !== deleteItem.id));
-      toast({ title: 'Relatório excluído' });
+      toast({ title: 'Relatório excluído', variant: 'delete' });
     } catch { toast({ title: 'Erro ao excluir', variant: 'destructive' }) }
     setDeleteItem(null);
   };

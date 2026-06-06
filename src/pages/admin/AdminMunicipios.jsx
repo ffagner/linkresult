@@ -43,11 +43,11 @@ export default function AdminMunicipios() {
       if (editItem) {
         await atualizar(editItem.id, form);
         setData(prev => prev.map(m => m.id === editItem.id ? { ...m, ...form } : m));
-        toast({ title: 'Município atualizado' });
+        toast({ title: 'Município atualizado', variant: 'edit' });
       } else {
         const id = await criar(form);
         setData(prev => [...prev, { id, ...form, createdAt: new Date().toISOString().split('T')[0] }]);
-        toast({ title: 'Município criado' });
+        toast({ title: 'Município criado', variant: 'create' });
       }
       setModalOpen(false);
     } catch { toast({ title: 'Erro ao salvar', variant: 'destructive' }) }
@@ -58,7 +58,7 @@ export default function AdminMunicipios() {
     try {
       await excluir(deleteItem.id);
       setData(prev => prev.filter(m => m.id !== deleteItem.id));
-      toast({ title: 'Município excluído' });
+      toast({ title: 'Município excluído', variant: 'delete' });
     } catch { toast({ title: 'Erro ao excluir', variant: 'destructive' }) }
     setDeleteItem(null);
   };

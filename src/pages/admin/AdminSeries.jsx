@@ -34,11 +34,11 @@ export default function AdminSeries() {
       if (editItem) {
         await atualizar(editItem.id, { nome: form.nome, ordem: parseInt(form.ordem) });
         setData(prev => prev.map(s => s.id === editItem.id ? { ...s, nome: form.nome, ordem: parseInt(form.ordem) } : s).sort((a, b) => a.ordem - b.ordem));
-        toast({ title: 'Série atualizada' });
+        toast({ title: 'Série atualizada', variant: 'edit' });
       } else {
         const id = await criar({ nome: form.nome, ordem: parseInt(form.ordem) });
         setData(prev => [...prev, { id, nome: form.nome, ordem: parseInt(form.ordem) }].sort((a, b) => a.ordem - b.ordem));
-        toast({ title: 'Série criada' });
+        toast({ title: 'Série criada', variant: 'create' });
       }
       setModalOpen(false);
     } catch { toast({ title: 'Erro ao salvar', variant: 'destructive' }) }
@@ -49,7 +49,7 @@ export default function AdminSeries() {
     try {
       await excluir(deleteItem.id);
       setData(prev => prev.filter(s => s.id !== deleteItem.id));
-      toast({ title: 'Série excluída' });
+      toast({ title: 'Série excluída', variant: 'delete' });
     } catch { toast({ title: 'Erro ao excluir', variant: 'destructive' }) }
     setDeleteItem(null);
   };

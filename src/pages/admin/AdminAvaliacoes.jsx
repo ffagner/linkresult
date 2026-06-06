@@ -46,11 +46,11 @@ export default function AdminAvaliacoes() {
       if (editItem) {
         await atualizar(editItem.id, { nome: form.nome, ano: parseInt(form.ano) });
         setData(prev => prev.map(a => a.id === editItem.id ? { ...a, nome: form.nome, ano: parseInt(form.ano) } : a));
-        toast({ title: 'Avaliação atualizada' });
+        toast({ title: 'Avaliação atualizada', variant: 'edit' });
       } else {
         const id = await criar({ nome: form.nome, ano: parseInt(form.ano) });
         setData(prev => [...prev, { id, nome: form.nome, ano: parseInt(form.ano), createdAt: new Date().toISOString().split('T')[0] }]);
-        toast({ title: 'Avaliação criada' });
+        toast({ title: 'Avaliação criada', variant: 'create' });
       }
       setModalOpen(false);
     } catch { toast({ title: 'Erro ao salvar', variant: 'destructive' }) }
@@ -61,7 +61,7 @@ export default function AdminAvaliacoes() {
     try {
       await excluir(deleteItem.id);
       setData(prev => prev.filter(a => a.id !== deleteItem.id));
-      toast({ title: 'Avaliação excluída' });
+      toast({ title: 'Avaliação excluída', variant: 'delete' });
     } catch { toast({ title: 'Erro ao excluir', variant: 'destructive' }) }
     setDeleteItem(null);
   };
