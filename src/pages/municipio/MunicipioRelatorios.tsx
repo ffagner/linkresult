@@ -7,8 +7,6 @@ import LoadingSpinner from '@/components/lr/LoadingSpinner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { listarPorMunicipio as listarRelatoriosPorMunicipio } from '@/api/relatorios';
 import type { RelatorioData } from '@/api/relatorios';
-import { listar as listarAvaliacoes } from '@/api/avaliacoes';
-import type { AvaliacaoData } from '@/api/avaliacoes';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,19 +15,14 @@ export default function MunicipioRelatorios() {
   const { profile, logout } = useAuth();
   const { toast } = useToast();
   const [relatorios, setRelatorios] = useState<RelatorioData[]>([]);
-  const [avaliacoes, setAvaliacoes] = useState<AvaliacaoData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [filterAvaliacao, setFilterAvaliacao] = useState<string>('todos');
 
   useEffect(() => {
     async function load() {
       try {
-        const [relatoriosData, avaliacoesData] = await Promise.all([
-          listarRelatoriosPorMunicipio(profile.municipioId),
-          listarAvaliacoes(),
-        ]);
+        const relatoriosData = await listarRelatoriosPorMunicipio(profile.municipioId);
         setRelatorios(relatoriosData);
-        setAvaliacoes(avaliacoesData);
       } catch (err) {
         toast({ title: 'Erro ao carregar', description: err.message, variant: 'destructive' });
       } finally {
@@ -38,6 +31,11 @@ export default function MunicipioRelatorios() {
     }
     if (profile?.municipioId) load();
   }, [profile]);
+
+  // Avaliações derivadas dos relatórios já liberados — sem busca extra ao Firestore
+  const avaliacoes = Array.from(
+    new Map(relatorios.map(r => [r.avaliacaoId, { id: r.avaliacaoId, nome: r.avaliacaoNome }])).values()
+  );
 
   const filtered = relatorios.filter(r =>
     filterAvaliacao === 'todos' || r.avaliacaoId === filterAvaliacao
