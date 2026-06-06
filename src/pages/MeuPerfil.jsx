@@ -5,13 +5,13 @@ import AppLayout from '@/components/lr/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { mockCurrentUser } from '@/lib/mockData';
+import { useAuth } from '@/lib/AuthContext';
 import StatusBadge from '@/components/lr/StatusBadge';
 
 export default function MeuPerfil() {
   const [searchParams] = useSearchParams();
   const roleParam = searchParams.get('role') || 'admin';
-  const user = mockCurrentUser[roleParam] || mockCurrentUser.admin;
+  const { profile } = useAuth();
 
   const [senhaAtual, setSenhaAtual] = useState('');
   const [novaSenha, setNovaSenha] = useState('');
@@ -34,7 +34,7 @@ export default function MeuPerfil() {
   const backHref = roleParam === 'admin' ? '/admin' : roleParam === 'pedagogico' ? '/pedagogico' : '/municipio';
 
   return (
-    <AppLayout role={roleParam} userName={user.nome}>
+    <AppLayout role={roleParam} userName={profile?.nome || 'Usuário'}>
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <Link to={backHref} className="p-2 rounded-xl hover:bg-muted transition-colors">
@@ -50,13 +50,13 @@ export default function MeuPerfil() {
               <User className="w-8 h-8 text-primary" />
             </div>
             <div>
-              <h2 className="text-xl font-display font-bold">{user.nome}</h2>
+              <h2 className="text-xl font-display font-bold">{profile?.nome || 'Usuário'}</h2>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
-                <StatusBadge status={user.role} />
-                {user.municipioNome && (
+                <StatusBadge status={profile?.role} />
+                {profile?.municipioNome && (
                   <span className="text-sm text-muted-foreground flex items-center gap-1">
                     <Building2 className="w-3.5 h-3.5" />
-                    {user.municipioNome}
+                    {profile.municipioNome}
                   </span>
                 )}
               </div>
@@ -68,7 +68,7 @@ export default function MeuPerfil() {
               <Mail className="w-4 h-4 text-muted-foreground" />
               <div>
                 <div className="text-xs text-muted-foreground">E-mail</div>
-                <div className="text-sm font-medium">{user.email}</div>
+                  <div className="text-sm font-medium">{profile?.email || ''}</div>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -76,7 +76,7 @@ export default function MeuPerfil() {
               <div>
                 <div className="text-xs text-muted-foreground">Perfil de acesso</div>
                 <div className="text-sm font-medium capitalize">
-                  {user.role === 'pedagogico' ? 'Pedagógico' : user.role === 'municipio' ? 'Município' : 'Administrador'}
+                  {profile?.role === 'pedagogico' ? 'Pedagógico' : profile?.role === 'municipio' ? 'Município' : 'Administrador'}
                 </div>
               </div>
             </div>

@@ -1,22 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Trash2, ArrowLeft, Layers, CheckCircle2, AlertCircle, Link as LinkIcon } from 'lucide-react';
+import { criarEmLote } from '@/api/relatorios';
+import { listar as listarMunicipios } from '@/api/municipios';
+import { listar as listarAvaliacoes } from '@/api/avaliacoes';
+import { listar as listarSeries } from '@/api/series';
+import { encryptLink } from '@/lib/crypto';
 import AppLayout from '@/components/lr/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mockMunicipios, mockAvaliacoes, mockSeries, mockCurrentUser } from '@/lib/mockData';
+import { useAuth } from '@/lib/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminRelatoriosLote() {
-  const user = mockCurrentUser.admin;
+  const { profile } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
+  const [municipios, setMunicipios] = useState([]);
+  const [avaliacoes, setAvaliacoes] = useState([]);
+  const [series, setSeries] = useState([]);
   const [municipioId, setMunicipioId] = useState('');
   const [avaliacaoId, setAvaliacaoId] = useState('');
   const [items, setItems] = useState([{ serieId: '', link: '', id: Date.now() }]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    Promise.all([
+      listarMunicipios(),
+      listarAvaliacoes(),
+      listarSeries(),
+    ]).then(([muns, avas, sers]) => {
+      setMunicipios(muns);
+      setAvaliacoes(avas);
+      setSeries(sers);
+    });
+  }, []);
 
   const addItem = () => setItems(prev => [...prev, { serieId: '', link: '', id: Date.now() }]);
   const removeItem = (id) => setItems(prev => prev.filter(i => i.id !== id));
@@ -25,22 +47,40 @@ export default function AdminRelatoriosLote() {
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
-    // lógica a implementar: writeBatch com encriptação de cada link
-    for (let i = 0; i < items.length; i++) {
-      await new Promise(r => setTimeout(r, 400));
-      setProgress(Math.round(((i + 1) / items.length) * 100));
+    try {
+      const mun = municipios.find(m => m.id === municipioId);
+      const ava = avaliacoes.find(a => a.id === avaliacaoId);
+      const itens = await Promise.all(items.map(async (item) => {
+        const ser = series.find(s => s.id === item.serieId);
+        return {
+          serieId: item.serieId,
+          serieNome: ser?.nome || '',
+          linkEncriptado: await encryptLink(item.link),
+        };
+      }));
+      await criarEmLote({
+        municipioId,
+        municipioNome: mun?.nome || '',
+        avaliacaoId,
+        avaliacaoNome: ava?.nome || '',
+        itens,
+      });
+      setSaving(false);
+      setSaved(true);
+      toast({ title: `${items.length} relatório(s) salvos com sucesso` });
+      setTimeout(() => navigate('/admin/relatorios'), 2000);
+    } catch {
+      toast({ title: 'Erro ao salvar relatórios', variant: 'destructive' });
+      setSaving(false);
     }
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => navigate('/admin/relatorios'), 2000);
   };
 
-  const mun = mockMunicipios.find(m => m.id === municipioId);
-  const ava = mockAvaliacoes.find(a => a.id === avaliacaoId);
+  const mun = municipios.find(m => m.id === municipioId);
+  const ava = avaliacoes.find(a => a.id === avaliacaoId);
 
   if (saved) {
     return (
-      <AppLayout role="admin" userName={user.nome}>
+      <AppLayout role="admin" userName={profile?.nome || 'Admin'}>
         <div className="max-w-2xl mx-auto flex flex-col items-center justify-center py-20 text-center animate-fade-in">
           <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
             <CheckCircle2 className="w-10 h-10 text-green-600" />
@@ -54,7 +94,7 @@ export default function AdminRelatoriosLote() {
   }
 
   return (
-    <AppLayout role="admin" userName={user.nome}>
+    <AppLayout role="admin" userName={profile?.nome || 'Admin'}>
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <Link to="/admin/relatorios" className="p-2 rounded-xl hover:bg-muted transition-colors">
@@ -70,7 +110,6 @@ export default function AdminRelatoriosLote() {
         </div>
 
         <form onSubmit={handleSave} className="space-y-6">
-          {/* Step 1: Select municipio + avaliacao */}
           <div className="bg-card rounded-2xl border border-border p-5">
             <h2 className="font-display font-semibold text-base mb-4 flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">1</span>
@@ -81,20 +120,19 @@ export default function AdminRelatoriosLote() {
                 <Label>Município</Label>
                 <Select value={municipioId} onValueChange={setMunicipioId} required>
                   <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Selecione o município" /></SelectTrigger>
-                  <SelectContent>{mockMunicipios.map(m => <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>)}</SelectContent>
+                  <SelectContent>{municipios.map(m => <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
                 <Label>Avaliação</Label>
                 <Select value={avaliacaoId} onValueChange={setAvaliacaoId} required>
                   <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Selecione a avaliação" /></SelectTrigger>
-                  <SelectContent>{mockAvaliacoes.map(a => <SelectItem key={a.id} value={a.id}>{a.nome} ({a.ano})</SelectItem>)}</SelectContent>
+                  <SelectContent>{avaliacoes.map(a => <SelectItem key={a.id} value={a.id}>{a.nome} ({a.ano})</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
           </div>
 
-          {/* Step 2: Series + links */}
           <div className="bg-card rounded-2xl border border-border p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display font-semibold text-base flex items-center gap-2">
@@ -112,7 +150,7 @@ export default function AdminRelatoriosLote() {
                       <Label className="text-xs">Série</Label>
                       <Select value={item.serieId} onValueChange={v => updateItem(item.id, 'serieId', v)}>
                         <SelectTrigger className="rounded-lg h-9 text-sm"><SelectValue placeholder="Selecione a série" /></SelectTrigger>
-                        <SelectContent>{mockSeries.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}</SelectContent>
+                        <SelectContent>{series.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-1">
@@ -148,7 +186,6 @@ export default function AdminRelatoriosLote() {
             </button>
           </div>
 
-          {/* Info */}
           <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-xl">
             <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div>
@@ -157,7 +194,6 @@ export default function AdminRelatoriosLote() {
             </div>
           </div>
 
-          {/* Progress */}
           {saving && (
             <div className="bg-card rounded-xl border border-border p-4">
               <div className="flex items-center justify-between mb-2">

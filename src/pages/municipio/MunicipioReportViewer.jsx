@@ -1,28 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Monitor, AlertCircle, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, AlertCircle, ShieldCheck } from 'lucide-react';
 import Logo from '@/components/lr/Logo';
-import { mockRelatorios, mockCurrentUser } from '@/lib/mockData';
+import LoadingSpinner from '@/components/lr/LoadingSpinner';
+import { buscar as buscarRelatorio } from '@/api/relatorios';
+import { decryptLink } from '@/lib/crypto';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function MunicipioReportViewer() {
   const { id } = useParams();
-  const user = mockCurrentUser.municipio;
+  const { profile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [relatorio, setRelatorio] = useState(null);
+  const [decryptedLink, setDecryptedLink] = useState('');
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    const found = mockRelatorios.find(r => r.id === id);
-    const t = setTimeout(() => {
-      if (found && found.liberado && found.municipioId === '1') {
-        setRelatorio(found);
-      } else {
+    async function load() {
+      try {
+        const data = await buscarRelatorio(id);
+        if (!data || data.municipioId !== profile?.municipioId || !data.liberado) {
+          setError(true);
+          setLoading(false);
+          return;
+        }
+        setRelatorio(data);
+        const link = await decryptLink(data.linkEncriptado);
+        setDecryptedLink(link);
+      } catch (err) {
         setError(true);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    }, 1200);
-    return () => clearTimeout(t);
-  }, [id]);
+    }
+    if (profile?.municipioId) load();
+  }, [id, profile]);
 
   return (
     <div className="flex flex-col h-screen bg-slate-900">
@@ -51,8 +63,7 @@ export default function MunicipioReportViewer() {
       <div className="flex-1 relative overflow-hidden">
         {loading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900">
-            <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
-            <p className="text-slate-400 text-sm">Carregando relatório...</p>
+            <LoadingSpinner size="lg" text="Carregando relatório..." />
             <p className="text-slate-600 text-xs mt-1">Verificando acesso...</p>
           </div>
         ) : error ? (
@@ -69,27 +80,12 @@ export default function MunicipioReportViewer() {
             </div>
           </div>
         ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-800">
-            {/* Placeholder — would be a real iframe in production */}
-            <div className="text-center">
-              <div className="w-20 h-20 rounded-2xl bg-blue-600/20 flex items-center justify-center mx-auto mb-4">
-                <Monitor className="w-10 h-10 text-blue-400" />
-              </div>
-              <h3 className="text-white font-semibold text-lg mb-2">Relatório Power BI</h3>
-              <p className="text-slate-400 text-sm mb-1">{relatorio?.municipioNome}</p>
-              <p className="text-slate-500 text-sm mb-1">{relatorio?.avaliacaoNome} — {relatorio?.serieNome}</p>
-              <div className="mt-4 flex items-center justify-center gap-2 text-xs text-green-400">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Link protegido — exibido apenas no iframe
-              </div>
-              <div className="mt-4 px-6 py-3 bg-blue-600/20 rounded-xl border border-blue-500/30">
-                <p className="text-blue-300 text-xs flex items-center gap-2">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  O relatório seria exibido aqui de forma integrada
-                </p>
-              </div>
-            </div>
-          </div>
+          <iframe
+            src={decryptedLink}
+            className="absolute inset-0 w-full h-full border-0"
+            title="Relatório Power BI"
+            allowFullScreen
+          />
         )}
       </div>
     </div>

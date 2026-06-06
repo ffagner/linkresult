@@ -1,26 +1,37 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FileText, CheckCircle2, Clock, ArrowRight, Eye } from 'lucide-react';
+import { listar as listarRelatorios } from '@/api/relatorios';
+import { useAuth } from '@/lib/AuthContext';
 import AppLayout from '@/components/lr/AppLayout';
 import StatsCard from '@/components/lr/StatsCard';
 import PageHeader from '@/components/lr/PageHeader';
-import StatusBadge from '@/components/lr/StatusBadge';
 import { Button } from '@/components/ui/button';
-import { mockRelatorios, mockCurrentUser } from '@/lib/mockData';
+import LoadingSpinner from '@/components/lr/LoadingSpinner';
 
 export default function PedagogicoDashboard() {
-  const user = mockCurrentUser.pedagogico;
-  const total = mockRelatorios.length;
-  const liberados = mockRelatorios.filter(r => r.liberado).length;
-  const pendentes = mockRelatorios.filter(r => !r.liberado).length;
-  const recentes = mockRelatorios.filter(r => !r.liberado).slice(0, 5);
+  const { profile } = useAuth();
+  const [total, setTotal] = useState(0);
+  const [liberados, setLiberados] = useState(0);
+  const [pendentes, setPendentes] = useState(0);
+  const [recentes, setRecentes] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    listarRelatorios().then(r => {
+      setTotal(r.length);
+      setLiberados(r.filter(x => x.liberado).length);
+      setPendentes(r.filter(x => !x.liberado).length);
+      setRecentes(r.filter(x => !x.liberado).slice(0, 5));
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return <AppLayout role="pedagogico" userName={profile?.nome || 'Usuário'}><LoadingSpinner text="Carregando..." /></AppLayout>;
 
   return (
-    <AppLayout role="pedagogico" userName={user.nome}>
-      <PageHeader
-        title="Dashboard"
-        subtitle="Acompanhe a análise e liberação de relatórios"
-      />
+    <AppLayout role="pedagogico" userName={profile?.nome || 'Usuário'}>
+      <PageHeader title="Dashboard" subtitle="Acompanhe a análise e liberação de relatórios" />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <StatsCard label="Total de relatórios" value={total} icon={FileText} color="blue" />
@@ -28,29 +39,24 @@ export default function PedagogicoDashboard() {
         <StatsCard label="Aguardando análise" value={pendentes} icon={Clock} color="amber" />
       </div>
 
-      {/* Progress bar */}
-      <div className="bg-card rounded-2xl border border-border p-5 mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium">Progresso de liberação</span>
-          <span className="text-sm font-bold text-primary">{Math.round((liberados / total) * 100)}%</span>
+      {total > 0 && (
+        <div className="bg-card rounded-2xl border border-border p-5 mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">Progresso de liberação</span>
+            <span className="text-sm font-bold text-primary">{Math.round((liberados / total) * 100)}%</span>
+          </div>
+          <div className="w-full bg-muted rounded-full h-2.5">
+            <div className="bg-gradient-to-r from-blue-500 to-green-500 h-2.5 rounded-full transition-all duration-700" style={{ width: `${(liberados / total) * 100}%` }} />
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">{liberados} de {total} relatórios liberados para os municípios</p>
         </div>
-        <div className="w-full bg-muted rounded-full h-2.5">
-          <div
-            className="bg-gradient-to-r from-blue-500 to-green-500 h-2.5 rounded-full transition-all duration-700"
-            style={{ width: `${(liberados / total) * 100}%` }}
-          />
-        </div>
-        <p className="text-xs text-muted-foreground mt-2">{liberados} de {total} relatórios liberados para os municípios</p>
-      </div>
+      )}
 
-      {/* Pending reports */}
       <div className="bg-card rounded-2xl border border-border overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <h2 className="font-display font-semibold">Relatórios aguardando análise</h2>
           <Link to="/pedagogico/relatorios">
-            <Button variant="ghost" size="sm" className="gap-1.5 text-primary">
-              Ver todos <ArrowRight className="w-4 h-4" />
-            </Button>
+            <Button variant="ghost" size="sm" className="gap-1.5 text-primary">Ver todos <ArrowRight className="w-4 h-4" /></Button>
           </Link>
         </div>
         {recentes.length === 0 ? (
@@ -78,8 +84,7 @@ export default function PedagogicoDashboard() {
                     <td className="px-4 py-3">
                       <Link to={`/pedagogico/relatorio/${r.id}`}>
                         <Button size="sm" variant="outline" className="rounded-lg gap-1.5 h-7 text-xs">
-                          <Eye className="w-3 h-3" />
-                          Analisar
+                          <Eye className="w-3 h-3" /> Analisar
                         </Button>
                       </Link>
                     </td>

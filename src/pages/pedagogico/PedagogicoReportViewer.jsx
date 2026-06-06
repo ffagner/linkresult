@@ -1,30 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Monitor, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import Logo from '@/components/lr/Logo';
 import StatusBadge from '@/components/lr/StatusBadge';
+import LoadingSpinner from '@/components/lr/LoadingSpinner';
 import { Button } from '@/components/ui/button';
-import { mockRelatorios, mockCurrentUser } from '@/lib/mockData';
+import { buscar as buscarRelatorio, liberar } from '@/api/relatorios';
+import { decryptLink } from '@/lib/crypto';
+import { useAuth } from '@/lib/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export default function PedagogicoReportViewer() {
   const { id } = useParams();
-  const user = mockCurrentUser.pedagogico;
+  const { profile } = useAuth();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [relatorio, setRelatorio] = useState(null);
+  const [decryptedLink, setDecryptedLink] = useState('');
   const [toggling, setToggling] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const found = mockRelatorios.find(r => r.id === id) || mockRelatorios[0];
-    const t = setTimeout(() => { setRelatorio(found); setLoading(false); }, 1000);
-    return () => clearTimeout(t);
+    async function load() {
+      try {
+        const data = await buscarRelatorio(id);
+        if (!data) {
+          setError('Relatório não encontrado');
+          setLoading(false);
+          return;
+        }
+        setRelatorio(data);
+        const link = await decryptLink(data.linkEncriptado);
+        setDecryptedLink(link);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
   }, [id]);
 
   const handleToggle = async () => {
     setToggling(true);
-    // lógica a implementar: updateDoc
-    await new Promise(r => setTimeout(r, 800));
-    setRelatorio(prev => ({ ...prev, liberado: !prev.liberado }));
-    setToggling(false);
+    try {
+      const novoValor = !relatorio.liberado;
+      await liberar(id, profile.uid, novoValor);
+      setRelatorio(prev => ({ ...prev, liberado: novoValor }));
+      toast({ title: novoValor ? 'Relatório liberado' : 'Acesso revogado' });
+    } catch (err) {
+      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+    } finally {
+      setToggling(false);
+    }
   };
 
   return (
@@ -69,26 +97,25 @@ export default function PedagogicoReportViewer() {
       <div className="flex-1 relative overflow-hidden">
         {loading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900">
-            <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
-            <p className="text-slate-400 text-sm">Carregando relatório...</p>
+            <LoadingSpinner size="lg" text="Carregando relatório..." />
           </div>
-        ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-800">
+        ) : error ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900">
             <div className="text-center">
-              <div className="w-20 h-20 rounded-2xl bg-blue-600/20 flex items-center justify-center mx-auto mb-4">
-                <Monitor className="w-10 h-10 text-blue-400" />
+              <div className="w-16 h-16 rounded-2xl bg-red-500/20 flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-8 h-8 text-red-400" />
               </div>
-              <h3 className="text-white font-semibold text-lg mb-2">Relatório Power BI</h3>
-              <p className="text-slate-400 text-sm mb-1">{relatorio?.municipioNome} — {relatorio?.avaliacaoNome}</p>
-              <p className="text-slate-500 text-sm mb-6">{relatorio?.serieNome}</p>
-              <div className="px-6 py-3 bg-blue-600/20 rounded-xl border border-blue-500/30">
-                <p className="text-blue-300 text-xs flex items-center gap-2">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  O iframe do Power BI seria carregado aqui
-                </p>
-              </div>
+              <h3 className="text-white font-semibold text-lg mb-2">Erro ao carregar</h3>
+              <p className="text-slate-400 text-sm">{error}</p>
             </div>
           </div>
+        ) : (
+          <iframe
+            src={decryptedLink}
+            className="absolute inset-0 w-full h-full border-0"
+            title="Relatório Power BI"
+            allowFullScreen
+          />
         )}
       </div>
     </div>

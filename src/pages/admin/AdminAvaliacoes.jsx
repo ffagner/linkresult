@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Search, Pencil, Trash2, Filter } from 'lucide-react';
+import { listar, criar, atualizar, excluir } from '@/api/avaliacoes';
 import AppLayout from '@/components/lr/AppLayout';
 import PageHeader from '@/components/lr/PageHeader';
 import DataTable from '@/components/lr/DataTable';
@@ -9,11 +10,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mockAvaliacoes, mockCurrentUser } from '@/lib/mockData';
+import { useAuth } from '@/lib/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminAvaliacoes() {
-  const user = mockCurrentUser.admin;
-  const [data, setData] = useState(mockAvaliacoes);
+  const { profile } = useAuth();
+  const { toast } = useToast();
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterAno, setFilterAno] = useState('todos');
   const [modalOpen, setModalOpen] = useState(false);
@@ -21,6 +25,8 @@ export default function AdminAvaliacoes() {
   const [deleteItem, setDeleteItem] = useState(null);
   const [form, setForm] = useState({ nome: '', ano: '' });
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => { listar().then(r => { setData(r); setLoading(false) }) }, []);
 
   const anos = [...new Set(data.map(a => a.ano))].sort((a, b) => b - a);
 
@@ -36,15 +42,28 @@ export default function AdminAvaliacoes() {
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
-    // lógica a implementar
-    await new Promise(r => setTimeout(r, 800));
-    if (editItem) {
-      setData(prev => prev.map(a => a.id === editItem.id ? { ...a, nome: form.nome, ano: parseInt(form.ano) } : a));
-    } else {
-      setData(prev => [...prev, { id: String(Date.now()), nome: form.nome, ano: parseInt(form.ano), createdAt: new Date().toISOString().split('T')[0] }]);
-    }
-    setSaving(false);
-    setModalOpen(false);
+    try {
+      if (editItem) {
+        await atualizar(editItem.id, { nome: form.nome, ano: parseInt(form.ano) });
+        setData(prev => prev.map(a => a.id === editItem.id ? { ...a, nome: form.nome, ano: parseInt(form.ano) } : a));
+        toast({ title: 'Avaliação atualizada' });
+      } else {
+        const id = await criar({ nome: form.nome, ano: parseInt(form.ano) });
+        setData(prev => [...prev, { id, nome: form.nome, ano: parseInt(form.ano), createdAt: new Date().toISOString().split('T')[0] }]);
+        toast({ title: 'Avaliação criada' });
+      }
+      setModalOpen(false);
+    } catch { toast({ title: 'Erro ao salvar', variant: 'destructive' }) }
+    finally { setSaving(false) }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await excluir(deleteItem.id);
+      setData(prev => prev.filter(a => a.id !== deleteItem.id));
+      toast({ title: 'Avaliação excluída' });
+    } catch { toast({ title: 'Erro ao excluir', variant: 'destructive' }) }
+    setDeleteItem(null);
   };
 
   const columns = [
@@ -69,7 +88,7 @@ export default function AdminAvaliacoes() {
   ];
 
   return (
-    <AppLayout role="admin" userName={user.nome}>
+    <AppLayout role="admin" userName={profile?.nome || 'Admin'}>
       <PageHeader
         title="Avaliações"
         subtitle={`${data.length} avaliações cadastradas`}
@@ -98,7 +117,7 @@ export default function AdminAvaliacoes() {
         </Select>
       </div>
 
-      <DataTable columns={columns} data={filtered} emptyTitle="Nenhuma avaliação encontrada" emptyDescription="Clique em 'Nova Avaliação' para adicionar." />
+      <DataTable columns={columns} data={filtered} loading={loading} emptyTitle="Nenhuma avaliação encontrada" emptyDescription="Clique em 'Nova Avaliação' para adicionar." />
 
       <FormModal
         open={modalOpen}
@@ -123,7 +142,7 @@ export default function AdminAvaliacoes() {
         </form>
       </FormModal>
 
-      <ConfirmDialog open={!!deleteItem} onClose={() => setDeleteItem(null)} onConfirm={() => setData(prev => prev.filter(a => a.id !== deleteItem.id))} title="Excluir avaliação" description={`Excluir "${deleteItem?.nome}"? Esta ação não pode ser desfeita.`} confirmLabel="Excluir" />
+      <ConfirmDialog open={!!deleteItem} onClose={() => setDeleteItem(null)} onConfirm={handleDelete} title="Excluir avaliação" description={`Excluir "${deleteItem?.nome}"? Esta ação não pode ser desfeita.`} confirmLabel="Excluir" />
     </AppLayout>
   );
 }

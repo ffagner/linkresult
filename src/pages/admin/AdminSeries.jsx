@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, GripVertical, BookOpen } from 'lucide-react';
+import { listar, criar, atualizar, excluir } from '@/api/series';
 import AppLayout from '@/components/lr/AppLayout';
 import PageHeader from '@/components/lr/PageHeader';
 import FormModal from '@/components/lr/FormModal';
@@ -7,16 +8,21 @@ import ConfirmDialog from '@/components/lr/ConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { mockSeries, mockCurrentUser } from '@/lib/mockData';
+import { useAuth } from '@/lib/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminSeries() {
-  const user = mockCurrentUser.admin;
-  const [data, setData] = useState([...mockSeries].sort((a, b) => a.ordem - b.ordem));
+  const { profile } = useAuth();
+  const { toast } = useToast();
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
   const [form, setForm] = useState({ nome: '', ordem: '' });
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => { listar().then(r => { setData(r); setLoading(false) }) }, []);
 
   const openCreate = () => { setEditItem(null); setForm({ nome: '', ordem: String(data.length + 1) }); setModalOpen(true); };
   const openEdit = (item) => { setEditItem(item); setForm({ nome: item.nome, ordem: String(item.ordem) }); setModalOpen(true); };
@@ -24,18 +30,32 @@ export default function AdminSeries() {
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
-    await new Promise(r => setTimeout(r, 800));
-    if (editItem) {
-      setData(prev => prev.map(s => s.id === editItem.id ? { ...s, nome: form.nome, ordem: parseInt(form.ordem) } : s).sort((a, b) => a.ordem - b.ordem));
-    } else {
-      setData(prev => [...prev, { id: String(Date.now()), nome: form.nome, ordem: parseInt(form.ordem) }].sort((a, b) => a.ordem - b.ordem));
-    }
-    setSaving(false);
-    setModalOpen(false);
+    try {
+      if (editItem) {
+        await atualizar(editItem.id, { nome: form.nome, ordem: parseInt(form.ordem) });
+        setData(prev => prev.map(s => s.id === editItem.id ? { ...s, nome: form.nome, ordem: parseInt(form.ordem) } : s).sort((a, b) => a.ordem - b.ordem));
+        toast({ title: 'Série atualizada' });
+      } else {
+        const id = await criar({ nome: form.nome, ordem: parseInt(form.ordem) });
+        setData(prev => [...prev, { id, nome: form.nome, ordem: parseInt(form.ordem) }].sort((a, b) => a.ordem - b.ordem));
+        toast({ title: 'Série criada' });
+      }
+      setModalOpen(false);
+    } catch { toast({ title: 'Erro ao salvar', variant: 'destructive' }) }
+    finally { setSaving(false) }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await excluir(deleteItem.id);
+      setData(prev => prev.filter(s => s.id !== deleteItem.id));
+      toast({ title: 'Série excluída' });
+    } catch { toast({ title: 'Erro ao excluir', variant: 'destructive' }) }
+    setDeleteItem(null);
   };
 
   return (
-    <AppLayout role="admin" userName={user.nome}>
+    <AppLayout role="admin" userName={profile?.nome || 'Admin'}>
       <PageHeader
         title="Séries / Etapas"
         subtitle="Gerencie as séries escolares do sistema"
@@ -55,7 +75,13 @@ export default function AdminSeries() {
             <div className="col-span-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Ações</div>
           </div>
         </div>
-        {data.map((serie, idx) => (
+        {loading ? (
+          <div className="text-center py-12 text-muted-foreground text-sm">Carregando...</div>
+        ) : data.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground text-sm">
+            Nenhuma série cadastrada. Clique em "Nova Série" para começar.
+          </div>
+        ) : data.map((serie, idx) => (
           <div key={serie.id} className="px-4 py-3.5 border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
             <div className="grid grid-cols-12 gap-4 items-center">
               <div className="col-span-1 flex items-center gap-2">
@@ -79,11 +105,6 @@ export default function AdminSeries() {
             </div>
           </div>
         ))}
-        {data.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground text-sm">
-            Nenhuma série cadastrada. Clique em "Nova Série" para começar.
-          </div>
-        )}
       </div>
 
       <FormModal open={modalOpen} onClose={() => setModalOpen(false)} title={editItem ? 'Editar Série' : 'Nova Série'}>
@@ -106,7 +127,7 @@ export default function AdminSeries() {
         </form>
       </FormModal>
 
-      <ConfirmDialog open={!!deleteItem} onClose={() => setDeleteItem(null)} onConfirm={() => setData(prev => prev.filter(s => s.id !== deleteItem.id))} title="Excluir série" description={`Excluir "${deleteItem?.nome}"?`} confirmLabel="Excluir" />
+      <ConfirmDialog open={!!deleteItem} onClose={() => setDeleteItem(null)} onConfirm={handleDelete} title="Excluir série" description={`Excluir "${deleteItem?.nome}"?`} confirmLabel="Excluir" />
     </AppLayout>
   );
 }

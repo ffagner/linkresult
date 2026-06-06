@@ -1,24 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BarChart3, Filter, Play, LogOut, User, FileText } from 'lucide-react';
+import { BarChart3, Play, LogOut, User, FileText } from 'lucide-react';
 import Logo from '@/components/lr/Logo';
 import EmptyState from '@/components/lr/EmptyState';
-import { Button } from '@/components/ui/button';
+import LoadingSpinner from '@/components/lr/LoadingSpinner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mockRelatorios, mockAvaliacoes, mockSeries, mockCurrentUser } from '@/lib/mockData';
+import { listarPorMunicipio as listarRelatoriosPorMunicipio } from '@/api/relatorios';
+import { listar as listarAvaliacoes } from '@/api/avaliacoes';
+import { useAuth } from '@/lib/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export default function MunicipioRelatorios() {
-  const user = mockCurrentUser.municipio;
+  const { profile } = useAuth();
+  const { toast } = useToast();
+  const [relatorios, setRelatorios] = useState([]);
+  const [avaliacoes, setAvaliacoes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filterAvaliacao, setFilterAvaliacao] = useState('todos');
 
-  // Only liberados for this municipio
-  const meusRelatorios = mockRelatorios.filter(r => r.municipioId === '1' && r.liberado);
+  useEffect(() => {
+    async function load() {
+      try {
+        const [relatoriosData, avaliacoesData] = await Promise.all([
+          listarRelatoriosPorMunicipio(profile.municipioId),
+          listarAvaliacoes(),
+        ]);
+        setRelatorios(relatoriosData);
+        setAvaliacoes(avaliacoesData);
+      } catch (err) {
+        toast({ title: 'Erro ao carregar', description: err.message, variant: 'destructive' });
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (profile?.municipioId) load();
+  }, [profile]);
 
-  const filtered = meusRelatorios.filter(r =>
+  const filtered = relatorios.filter(r =>
     filterAvaliacao === 'todos' || r.avaliacaoId === filterAvaliacao
   );
 
-  // Group by avaliacao
   const grouped = filtered.reduce((acc, r) => {
     const key = r.avaliacaoId;
     if (!acc[key]) acc[key] = { avaliacaoNome: r.avaliacaoNome, items: [] };
@@ -26,9 +47,14 @@ export default function MunicipioRelatorios() {
     return acc;
   }, {});
 
+  if (loading) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <LoadingSpinner size="lg" text="Carregando relatórios..." />
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="sticky top-0 z-40 bg-card border-b border-border">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
           <Logo size="sm" />
@@ -37,7 +63,7 @@ export default function MunicipioRelatorios() {
               <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
                 <User className="w-3.5 h-3.5 text-primary" />
               </div>
-              <span className="hidden sm:block font-medium">{user.nome}</span>
+              <span className="hidden sm:block font-medium">{profile?.nome || profile?.municipioNome}</span>
             </Link>
             <Link to="/login" className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
               <LogOut className="w-4 h-4" />
@@ -46,9 +72,7 @@ export default function MunicipioRelatorios() {
         </div>
       </header>
 
-      {/* Content */}
       <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Welcome */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-1">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -56,28 +80,25 @@ export default function MunicipioRelatorios() {
             </div>
             <div>
               <h1 className="text-xl font-display font-bold">Meus Relatórios</h1>
-              <p className="text-sm text-muted-foreground">{user.municipioNome} — {meusRelatorios.length} relatório(s) disponível(is)</p>
+              <p className="text-sm text-muted-foreground">{profile?.municipioNome} — {relatorios.length} relatório(s) disponível(is)</p>
             </div>
           </div>
         </div>
 
-        {/* Filter */}
-        {meusRelatorios.length > 0 && (
+        {relatorios.length > 0 && (
           <div className="flex items-center gap-3 mb-6">
-            <Filter className="w-4 h-4 text-muted-foreground" />
             <Select value={filterAvaliacao} onValueChange={setFilterAvaliacao}>
               <SelectTrigger className="w-56 h-9 rounded-xl text-sm">
-                <SelectValue />
+                <SelectValue placeholder="Todas as avaliações" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="todos">Todas as avaliações</SelectItem>
-                {mockAvaliacoes.map(a => <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>)}
+                {avaliacoes.map(a => <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
         )}
 
-        {/* Content */}
         {filtered.length === 0 ? (
           <EmptyState
             icon={FileText}

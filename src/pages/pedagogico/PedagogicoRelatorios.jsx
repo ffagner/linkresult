@@ -1,27 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Eye, CheckCircle2, XCircle, Filter } from 'lucide-react';
+import { Search, Eye, CheckCircle2, XCircle } from 'lucide-react';
 import AppLayout from '@/components/lr/AppLayout';
 import PageHeader from '@/components/lr/PageHeader';
 import DataTable from '@/components/lr/DataTable';
 import StatusBadge from '@/components/lr/StatusBadge';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mockRelatorios, mockMunicipios, mockAvaliacoes, mockCurrentUser } from '@/lib/mockData';
+import { listar, liberar } from '@/api/relatorios';
+import { listar as listarMunicipios } from '@/api/municipios';
+import { listar as listarAvaliacoes } from '@/api/avaliacoes';
+import { useAuth } from '@/lib/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export default function PedagogicoRelatorios() {
-  const user = mockCurrentUser.pedagogico;
-  const [data, setData] = useState(mockRelatorios);
+  const { profile } = useAuth();
+  const { toast } = useToast();
+  const [data, setData] = useState([]);
+  const [municipios, setMunicipios] = useState([]);
+  const [avaliacoes, setAvaliacoes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterMunicipio, setFilterMunicipio] = useState('todos');
   const [filterStatus, setFilterStatus] = useState('todos');
   const [updatingId, setUpdatingId] = useState(null);
 
+  useEffect(() => {
+    async function load() {
+      try {
+        const [relatoriosData, municipiosData, avaliacoesData] = await Promise.all([
+          listar(),
+          listarMunicipios(),
+          listarAvaliacoes(),
+        ]);
+        setData(relatoriosData);
+        setMunicipios(municipiosData);
+        setAvaliacoes(avaliacoesData);
+      } catch (err) {
+        toast({ title: 'Erro ao carregar', description: err.message, variant: 'destructive' });
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
   const filtered = data.filter(r => {
-    const matchSearch = r.municipioNome.toLowerCase().includes(search.toLowerCase()) ||
-      r.avaliacaoNome.toLowerCase().includes(search.toLowerCase()) ||
-      r.serieNome.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = (r.municipioNome || '').toLowerCase().includes(search.toLowerCase()) ||
+      (r.avaliacaoNome || '').toLowerCase().includes(search.toLowerCase()) ||
+      (r.serieNome || '').toLowerCase().includes(search.toLowerCase());
     const matchM = filterMunicipio === 'todos' || r.municipioId === filterMunicipio;
     const matchS = filterStatus === 'todos' || (filterStatus === 'liberado' ? r.liberado : !r.liberado);
     return matchSearch && matchM && matchS;
@@ -29,16 +56,18 @@ export default function PedagogicoRelatorios() {
 
   const handleToggle = async (r) => {
     setUpdatingId(r.id);
-    // lógica a implementar: updateDoc apenas liberado/liberadoEm/liberadoPor
-    await new Promise(res => setTimeout(res, 700));
-    setData(prev => prev.map(item =>
-      item.id === r.id ? {
-        ...item,
-        liberado: !item.liberado,
-        liberadoEm: !item.liberado ? new Date().toISOString().split('T')[0] : null
-      } : item
-    ));
-    setUpdatingId(null);
+    try {
+      const novoValor = !r.liberado;
+      await liberar(r.id, profile.uid, novoValor);
+      setData(prev => prev.map(item =>
+        item.id === r.id ? { ...item, liberado: novoValor, liberadoEm: novoValor ? new Date().toISOString().split('T')[0] : null, liberadoPor: novoValor ? profile.uid : null } : item
+      ));
+      toast({ title: novoValor ? 'Relatório liberado' : 'Acesso revogado', description: `${r.municipioNome} — ${r.avaliacaoNome}` });
+    } catch (err) {
+      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   const columns = [
@@ -78,7 +107,7 @@ export default function PedagogicoRelatorios() {
   ];
 
   return (
-    <AppLayout role="pedagogico" userName={user.nome}>
+    <AppLayout role="pedagogico" userName={profile?.nome || 'Usuário'}>
       <PageHeader
         title="Relatórios"
         subtitle="Analise e controle a liberação para os municípios"
@@ -93,7 +122,7 @@ export default function PedagogicoRelatorios() {
           <SelectTrigger className="w-44 h-10 rounded-xl"><SelectValue placeholder="Município" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todos os municípios</SelectItem>
-            {mockMunicipios.map(m => <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>)}
+            {municipios.map(m => <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -106,7 +135,7 @@ export default function PedagogicoRelatorios() {
         </Select>
       </div>
 
-      <DataTable columns={columns} data={filtered} emptyTitle="Nenhum relatório encontrado" emptyDescription="Ajuste os filtros para ver os resultados." />
+      <DataTable columns={columns} data={filtered} loading={loading} emptyTitle="Nenhum relatório encontrado" emptyDescription="Ajuste os filtros para ver os resultados." />
     </AppLayout>
   );
 }

@@ -1,6 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Search, Pencil, Trash2, Eye, Filter, FileText, Layers } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { listar, criar, atualizar, excluir } from '@/api/relatorios';
+import { listar as listarMunicipios } from '@/api/municipios';
+import { listar as listarAvaliacoes } from '@/api/avaliacoes';
+import { listar as listarSeries } from '@/api/series';
+import { encryptLink } from '@/lib/crypto';
 import AppLayout from '@/components/lr/AppLayout';
 import PageHeader from '@/components/lr/PageHeader';
 import DataTable from '@/components/lr/DataTable';
@@ -11,11 +16,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mockRelatorios, mockMunicipios, mockAvaliacoes, mockSeries, mockCurrentUser } from '@/lib/mockData';
+import { useAuth } from '@/lib/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminRelatorios() {
-  const user = mockCurrentUser.admin;
-  const [data, setData] = useState(mockRelatorios);
+  const { profile } = useAuth();
+  const { toast } = useToast();
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [municipios, setMunicipios] = useState([]);
+  const [avaliacoes, setAvaliacoes] = useState([]);
+  const [series, setSeries] = useState([]);
   const [search, setSearch] = useState('');
   const [filterMunicipio, setFilterMunicipio] = useState('todos');
   const [filterAvaliacao, setFilterAvaliacao] = useState('todos');
@@ -26,10 +37,25 @@ export default function AdminRelatorios() {
   const [form, setForm] = useState({ municipioId: '', avaliacaoId: '', serieId: '', link: '' });
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    Promise.all([
+      listar(),
+      listarMunicipios(),
+      listarAvaliacoes(),
+      listarSeries(),
+    ]).then(([rel, muns, avas, sers]) => {
+      setData(rel);
+      setMunicipios(muns);
+      setAvaliacoes(avas);
+      setSeries(sers);
+      setLoading(false);
+    });
+  }, []);
+
   const filtered = data.filter(r => {
-    const matchSearch = r.municipioNome.toLowerCase().includes(search.toLowerCase()) ||
-      r.avaliacaoNome.toLowerCase().includes(search.toLowerCase()) ||
-      r.serieNome.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = (r.municipioNome || '').toLowerCase().includes(search.toLowerCase()) ||
+      (r.avaliacaoNome || '').toLowerCase().includes(search.toLowerCase()) ||
+      (r.serieNome || '').toLowerCase().includes(search.toLowerCase());
     const matchM = filterMunicipio === 'todos' || r.municipioId === filterMunicipio;
     const matchA = filterAvaliacao === 'todos' || r.avaliacaoId === filterAvaliacao;
     const matchS = filterStatus === 'todos' || (filterStatus === 'liberado' ? r.liberado : !r.liberado);
@@ -46,21 +72,47 @@ export default function AdminRelatorios() {
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
-    // lógica a implementar: encriptar link → addDoc/updateDoc
-    await new Promise(r => setTimeout(r, 1000));
-    const mun = mockMunicipios.find(m => m.id === form.municipioId);
-    const ava = mockAvaliacoes.find(a => a.id === form.avaliacaoId);
-    const ser = mockSeries.find(s => s.id === form.serieId);
-    if (!editItem) {
-      setData(prev => [...prev, {
-        id: String(Date.now()), municipioId: form.municipioId, municipioNome: mun?.nome,
-        avaliacaoId: form.avaliacaoId, avaliacaoNome: ava?.nome,
-        serieId: form.serieId, serieNome: ser?.nome,
-        liberado: false, liberadoEm: null, createdAt: new Date().toISOString().split('T')[0]
-      }]);
-    }
-    setSaving(false);
-    setModalOpen(false);
+    try {
+      const linkEncriptado = form.link ? await encryptLink(form.link) : undefined;
+      const mun = municipios.find(m => m.id === form.municipioId);
+      const ava = avaliacoes.find(a => a.id === form.avaliacaoId);
+      const ser = series.find(s => s.id === form.serieId);
+      if (editItem) {
+        const updateData = {};
+        if (form.municipioId) { updateData.municipioId = form.municipioId; updateData.municipioNome = mun?.nome; }
+        if (form.avaliacaoId) { updateData.avaliacaoId = form.avaliacaoId; updateData.avaliacaoNome = ava?.nome; }
+        if (form.serieId) { updateData.serieId = form.serieId; updateData.serieNome = ser?.nome; }
+        if (linkEncriptado) updateData.linkEncriptado = linkEncriptado;
+        await atualizar(editItem.id, updateData);
+        setData(prev => prev.map(r => r.id === editItem.id ? { ...r, ...updateData } : r));
+        toast({ title: 'Relatório atualizado' });
+      } else {
+        const id = await criar({
+          municipioId: form.municipioId, municipioNome: mun?.nome,
+          avaliacaoId: form.avaliacaoId, avaliacaoNome: ava?.nome,
+          serieId: form.serieId, serieNome: ser?.nome,
+          linkEncriptado,
+        });
+        setData(prev => [{
+          id, municipioId: form.municipioId, municipioNome: mun?.nome,
+          avaliacaoId: form.avaliacaoId, avaliacaoNome: ava?.nome,
+          serieId: form.serieId, serieNome: ser?.nome,
+          liberado: false, liberadoEm: null, createdAt: new Date().toISOString().split('T')[0],
+        }, ...prev]);
+        toast({ title: 'Relatório criado' });
+      }
+      setModalOpen(false);
+    } catch { toast({ title: 'Erro ao salvar', variant: 'destructive' }) }
+    finally { setSaving(false) }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await excluir(deleteItem.id);
+      setData(prev => prev.filter(r => r.id !== deleteItem.id));
+      toast({ title: 'Relatório excluído' });
+    } catch { toast({ title: 'Erro ao excluir', variant: 'destructive' }) }
+    setDeleteItem(null);
   };
 
   const columns = [
@@ -89,7 +141,7 @@ export default function AdminRelatorios() {
   ];
 
   return (
-    <AppLayout role="admin" userName={user.nome}>
+    <AppLayout role="admin" userName={profile?.nome || 'Admin'}>
       <PageHeader
         title="Relatórios"
         subtitle={`${data.length} relatórios cadastrados`}
@@ -109,7 +161,6 @@ export default function AdminRelatorios() {
         }
       />
 
-      {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-4">
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -121,7 +172,16 @@ export default function AdminRelatorios() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todos os municípios</SelectItem>
-            {mockMunicipios.map(m => <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>)}
+            {municipios.map(m => <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={filterAvaliacao} onValueChange={setFilterAvaliacao}>
+          <SelectTrigger className="w-44 h-10 rounded-xl">
+            <SelectValue placeholder="Avaliação" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todas as avaliações</SelectItem>
+            {avaliacoes.map(a => <SelectItem key={a.id} value={a.id}>{a.nome} ({a.ano})</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -136,7 +196,7 @@ export default function AdminRelatorios() {
         </Select>
       </div>
 
-      <DataTable columns={columns} data={filtered} emptyTitle="Nenhum relatório encontrado" emptyDescription="Adicione relatórios individuais ou use o cadastro em lote." />
+      <DataTable columns={columns} data={filtered} loading={loading} emptyTitle="Nenhum relatório encontrado" emptyDescription="Adicione relatórios individuais ou use o cadastro em lote." />
 
       <FormModal open={modalOpen} onClose={() => setModalOpen(false)} title={editItem ? 'Editar Relatório' : 'Novo Relatório'} subtitle="Preencha os dados do relatório">
         <form onSubmit={handleSave} className="space-y-4">
@@ -144,21 +204,21 @@ export default function AdminRelatorios() {
             <Label>Município</Label>
             <Select value={form.municipioId} onValueChange={v => setForm(f => ({ ...f, municipioId: v }))}>
               <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-              <SelectContent>{mockMunicipios.map(m => <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>)}</SelectContent>
+              <SelectContent>{municipios.map(m => <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
             <Label>Avaliação</Label>
             <Select value={form.avaliacaoId} onValueChange={v => setForm(f => ({ ...f, avaliacaoId: v }))}>
               <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-              <SelectContent>{mockAvaliacoes.map(a => <SelectItem key={a.id} value={a.id}>{a.nome} ({a.ano})</SelectItem>)}</SelectContent>
+              <SelectContent>{avaliacoes.map(a => <SelectItem key={a.id} value={a.id}>{a.nome} ({a.ano})</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
             <Label>Série</Label>
             <Select value={form.serieId} onValueChange={v => setForm(f => ({ ...f, serieId: v }))}>
               <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-              <SelectContent>{mockSeries.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}</SelectContent>
+              <SelectContent>{series.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
@@ -175,7 +235,7 @@ export default function AdminRelatorios() {
         </form>
       </FormModal>
 
-      <ConfirmDialog open={!!deleteItem} onClose={() => setDeleteItem(null)} onConfirm={() => setData(prev => prev.filter(r => r.id !== deleteItem.id))} title="Excluir relatório" description="Excluir este relatório? Esta ação não pode ser desfeita." confirmLabel="Excluir" />
+      <ConfirmDialog open={!!deleteItem} onClose={() => setDeleteItem(null)} onConfirm={handleDelete} title="Excluir relatório" description="Excluir este relatório? Esta ação não pode ser desfeita." confirmLabel="Excluir" />
     </AppLayout>
   );
 }

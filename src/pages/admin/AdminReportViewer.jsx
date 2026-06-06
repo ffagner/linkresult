@@ -3,19 +3,35 @@ import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Monitor, AlertCircle } from 'lucide-react';
 import Logo from '@/components/lr/Logo';
 import StatusBadge from '@/components/lr/StatusBadge';
-import { mockRelatorios, mockCurrentUser } from '@/lib/mockData';
+import { useAuth } from '@/lib/AuthContext';
+import { buscar as buscarRelatorio } from '@/api/relatorios';
+import { decryptLink } from '@/lib/crypto';
 
 export default function AdminReportViewer() {
   const { id } = useParams();
-  const user = mockCurrentUser.admin;
+  const { profile } = useAuth();
   const [loading, setLoading] = useState(true);
-
-  const relatorio = mockRelatorios.find(r => r.id === id) || mockRelatorios[0];
+  const [relatorio, setRelatorio] = useState(null);
+  const [embedUrl, setEmbedUrl] = useState(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 1200);
-    return () => clearTimeout(t);
-  }, []);
+    async function load() {
+      try {
+        const r = await buscarRelatorio(id);
+        setRelatorio(r);
+        if (r?.linkEncriptado) {
+          const link = await decryptLink(r.linkEncriptado);
+          setEmbedUrl(link);
+        }
+      } catch {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [id]);
 
   return (
     <div className="flex flex-col h-screen bg-slate-900">
@@ -46,9 +62,15 @@ export default function AdminReportViewer() {
             <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
             <p className="text-slate-400 text-sm">Carregando relatório...</p>
           </div>
+        ) : error ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900">
+            <AlertCircle className="w-12 h-12 text-red-400 mb-4" />
+            <p className="text-slate-400 text-sm">Erro ao carregar relatório.</p>
+          </div>
+        ) : embedUrl ? (
+          <iframe src={embedUrl} className="absolute inset-0 w-full h-full" title="Relatório Power BI" allowFullScreen />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-800">
-            {/* Placeholder for iframe */}
             <div className="text-center">
               <div className="w-20 h-20 rounded-2xl bg-blue-600/20 flex items-center justify-center mx-auto mb-4">
                 <Monitor className="w-10 h-10 text-blue-400" />
@@ -56,12 +78,14 @@ export default function AdminReportViewer() {
               <h3 className="text-white font-semibold text-lg mb-2">Relatório Power BI</h3>
               <p className="text-slate-400 text-sm mb-1">{relatorio?.municipioNome} — {relatorio?.avaliacaoNome}</p>
               <p className="text-slate-500 text-sm">{relatorio?.serieNome}</p>
-              <div className="mt-6 px-6 py-3 bg-blue-600/20 rounded-xl border border-blue-500/30">
-                <p className="text-blue-300 text-xs flex items-center gap-2">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  O iframe do Power BI seria carregado aqui com o link descriptografado
-                </p>
-              </div>
+              {!relatorio?.linkEncriptado && (
+                <div className="mt-6 px-6 py-3 bg-amber-600/20 rounded-xl border border-amber-500/30">
+                  <p className="text-amber-300 text-xs flex items-center gap-2">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    Nenhum link cadastrado para este relatório.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}

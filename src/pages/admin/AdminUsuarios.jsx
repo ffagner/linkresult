@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Search, Pencil, Filter, UserX, UserCheck } from 'lucide-react';
+import { listar, criar, atualizar, excluir } from '@/api/usuarios';
+import { listar as listarMunicipios } from '@/api/municipios';
 import AppLayout from '@/components/lr/AppLayout';
 import PageHeader from '@/components/lr/PageHeader';
 import DataTable from '@/components/lr/DataTable';
@@ -10,11 +12,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mockUsuarios, mockMunicipios, mockCurrentUser } from '@/lib/mockData';
+import { useAuth } from '@/lib/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminUsuarios() {
-  const user = mockCurrentUser.admin;
-  const [data, setData] = useState(mockUsuarios);
+  const { profile } = useAuth();
+  const { toast } = useToast();
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [municipios, setMunicipios] = useState([]);
   const [search, setSearch] = useState('');
   const [filterRole, setFilterRole] = useState('todos');
   const [modalOpen, setModalOpen] = useState(false);
@@ -22,6 +28,14 @@ export default function AdminUsuarios() {
   const [toggleItem, setToggleItem] = useState(null);
   const [form, setForm] = useState({ nome: '', email: '', senha: '', role: 'municipio', municipioId: '' });
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    Promise.all([listar(), listarMunicipios()]).then(([users, muns]) => {
+      setData(users);
+      setMunicipios(muns);
+      setLoading(false);
+    });
+  }, []);
 
   const filtered = data.filter(u => {
     const matchSearch = u.nome.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
@@ -35,20 +49,32 @@ export default function AdminUsuarios() {
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
-    // lógica a implementar: createUserWithEmailAndPassword / updateDoc
-    await new Promise(r => setTimeout(r, 1000));
-    const mun = mockMunicipios.find(m => m.id === form.municipioId);
-    if (editItem) {
-      setData(prev => prev.map(u => u.id === editItem.id ? { ...u, ...form, municipioNome: mun?.nome || null } : u));
-    } else {
-      setData(prev => [...prev, { id: String(Date.now()), ...form, municipioNome: mun?.nome || null, status: 'ativo', createdAt: new Date().toISOString().split('T')[0] }]);
-    }
-    setSaving(false);
-    setModalOpen(false);
+    try {
+      const mun = municipios.find(m => m.id === form.municipioId);
+      if (editItem) {
+        const updateData = { nome: form.nome, email: form.email, role: form.role, municipioId: form.municipioId || null, municipioNome: mun?.nome || null };
+        await atualizar(editItem.uid, updateData);
+        setData(prev => prev.map(u => u.uid === editItem.uid ? { ...u, ...updateData } : u));
+        toast({ title: 'Usuário atualizado' });
+      } else {
+        await criar({ ...form, municipioNome: mun?.nome || null });
+        const refetched = await listar();
+        setData(refetched);
+        toast({ title: 'Usuário criado' });
+      }
+      setModalOpen(false);
+    } catch { toast({ title: 'Erro ao salvar', variant: 'destructive' }) }
+    finally { setSaving(false) }
   };
 
-  const handleToggleStatus = () => {
-    setData(prev => prev.map(u => u.id === toggleItem.id ? { ...u, status: u.status === 'ativo' ? 'inativo' : 'ativo' } : u));
+  const handleToggleStatus = async () => {
+    const novoStatus = toggleItem.status === 'ativo' ? 'inativo' : 'ativo';
+    try {
+      await atualizar(toggleItem.uid, { status: novoStatus });
+      setData(prev => prev.map(u => u.uid === toggleItem.uid ? { ...u, status: novoStatus } : u));
+      toast({ title: `Usuário ${novoStatus === 'ativo' ? 'reativado' : 'desativado'}` });
+    } catch { toast({ title: 'Erro ao alterar status', variant: 'destructive' }) }
+    setToggleItem(null);
   };
 
   const roleLabel = { admin: 'Admin', pedagogico: 'Pedagógico', municipio: 'Município' };
@@ -82,7 +108,7 @@ export default function AdminUsuarios() {
   ];
 
   return (
-    <AppLayout role="admin" userName={user.nome}>
+    <AppLayout role="admin" userName={profile?.nome || 'Admin'}>
       <PageHeader
         title="Usuários"
         subtitle={`${data.length} usuários cadastrados`}
@@ -113,7 +139,7 @@ export default function AdminUsuarios() {
         </Select>
       </div>
 
-      <DataTable columns={columns} data={filtered} emptyTitle="Nenhum usuário encontrado" emptyDescription="Crie o primeiro usuário clicando em 'Novo Usuário'." />
+      <DataTable columns={columns} data={filtered} loading={loading} emptyTitle="Nenhum usuário encontrado" emptyDescription="Crie o primeiro usuário clicando em 'Novo Usuário'." />
 
       <FormModal open={modalOpen} onClose={() => setModalOpen(false)} title={editItem ? 'Editar Usuário' : 'Novo Usuário'}>
         <form onSubmit={handleSave} className="space-y-4">
@@ -147,7 +173,7 @@ export default function AdminUsuarios() {
               <Label>Município vinculado</Label>
               <Select value={form.municipioId} onValueChange={v => setForm(f => ({ ...f, municipioId: v }))}>
                 <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                <SelectContent>{mockMunicipios.map(m => <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>)}</SelectContent>
+                <SelectContent>{municipios.map(m => <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>)}</SelectContent>
               </Select>
             </div>
           )}
