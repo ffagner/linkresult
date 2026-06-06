@@ -39,7 +39,7 @@ service cloud.firestore {
       allow read: if isPedagogico();
       allow update: if isPedagogico()
         && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['liberado', 'liberadoEm', 'liberadoPor']);
+            .hasOnly(['liberado', 'liberadoEm', 'liberadoPor', 'updatedAt']);
 
       allow read: if isMunicipio()
         && resource.data.municipioId == getMunicipioId()
