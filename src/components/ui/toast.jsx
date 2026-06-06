@@ -8,10 +8,10 @@ const ToastProvider = React.forwardRef(({ ...props }, ref) => (
 ));
 ToastProvider.displayName = "ToastProvider";
 
-const ToastViewport = React.forwardRef(({ ...props }, ref) => (
+const ToastViewport = React.forwardRef(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-[420px]"
+    className={cn("fixed bottom-4 right-4 z-[9999] flex flex-col gap-2 max-w-[420px]", className)}
     {...props}
   />
 ));
