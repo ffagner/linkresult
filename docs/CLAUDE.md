@@ -106,21 +106,39 @@ relatorios/{relatorioId}
   serieId:          string (ref → series)
   linkEncriptado:   string  // Link do Power BI encriptado via Web Crypto API
   liberado:         boolean (default: false)
-  liberadoEm:       timestamp | null
+  liberadoEm:       timestamp | null   // desde quando está liberado AGORA (revogar apaga)
   liberadoPor:      string (uid do pedagógico) | null
+  entregueEm:       timestamp | null   // data da 1ª entrega — NUNCA apagada ao revogar
+  entreguePor:      string (uid) | null
+  entreguePorNome:  string | null      // denormalizado, mesmo padrão de municipioNome
+  historico:        array<HistoricoItem>  // auditoria de liberado/revogado/data_ajustada
   createdAt:        timestamp
   updatedAt:        timestamp
 ```
 
+`HistoricoItem`: `{ acao: 'liberado'|'revogado'|'data_ajustada', em: timestamp, por: string, porNome: string, dataAnterior?: timestamp|null, dataNova?: timestamp|null }`.
+
+> ⚠️ `serverTimestamp()` não é aceito dentro de arrays pelo Firestore — as
+> entradas de `historico` usam `Timestamp.now()` (relógio do cliente). Os
+> campos autoritativos (`entregueEm`, `liberadoEm`) continuam usando
+> `serverTimestamp()`. Ver `src/api/relatorios.ts` (`liberar`,
+> `ajustarDataEntrega`) e `docs/PLANO-MELHORIAS.md` item 2.
+
 #### Coleção: `users`
 ```
 users/{uid}
-  nome:         string
-  email:        string
-  role:         'admin' | 'pedagogico' | 'municipio'
-  municipioId:  string | null  // null para admin e pedagógico
-  createdAt:    timestamp
+  nome:          string
+  email:         string
+  role:          'admin' | 'pedagogico' | 'municipio'
+  municipioId:   string | null  // null para admin e pedagógico
+  municipioNome: string | null  // denormalizado, só para role='municipio'
+  status:        'ativo' | 'inativo'  // ausente = tratado como 'ativo'
+  createdAt:     timestamp
 ```
+
+> ⚠️ `status: 'inativo'` derruba a sessão em tempo real (AuthContext escuta o
+> doc via `onSnapshot`) e é reforçado nas Security Rules (`isAtivo()`) — ver
+> seção 6.
 
 ---
 
@@ -175,71 +193,32 @@ A chave `VITE_CRYPTO_KEY` fica no bundle do frontend — um desenvolvedor experi
 
 ## 6. Firebase Security Rules
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
+> ⚠️ **Fonte da verdade: [`firestore.rules`](../firestore.rules) na raiz do
+> projeto.** Este documento não reproduz as regras em código — copiá-las aqui
+> já causou divergência entre o que está escrito e o que está deployado.
+> Antes de alterar regras, leia o arquivo real; depois de alterar, rode
+> `npx firebase deploy --only firestore:rules` (o deploy é um passo separado
+> de salvar o arquivo).
 
-    function isAdmin() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
+Invariantes que vale ter em mente ao mexer nas regras:
 
-    function isPedagogico() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'pedagogico';
-    }
-
-    function isMunicipio() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'municipio';
-    }
-
-    function getMunicipioId() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.municipioId;
-    }
-
-    // Municípios, avaliações e séries: admin escreve, todos leem
-    match /municipios/{id} {
-      allow read: if request.auth != null;
-      allow write: if isAdmin();
-    }
-
-    match /avaliacoes/{id} {
-      allow read: if request.auth != null;
-      allow write: if isAdmin();
-    }
-
-    match /series/{id} {
-      allow read: if request.auth != null;
-      allow write: if isAdmin();
-    }
-
-    // Relatórios
-    // IMPORTANTE: regras com o mesmo método (read/write) se SOMAM (lógica OR).
-    // O admin tem read+write totais; pedagógico e município adicionam permissões
-    // de read/update mais restritas que coexistem com a do admin.
-    match /relatorios/{id} {
-      // Admin: acesso total
-      allow read, write: if isAdmin();
-
-      // Pedagógico: lê tudo, atualiza apenas liberado/liberadoEm/liberadoPor
-      allow read: if isPedagogico();
-      allow update: if isPedagogico()
-        && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['liberado', 'liberadoEm', 'liberadoPor']);
-
-      // Município: lê apenas os seus relatórios liberados
-      allow read: if isMunicipio()
-        && resource.data.municipioId == getMunicipioId()
-        && resource.data.liberado == true;
-    }
-
-    // Users: admin gerencia todos, cada um lê o próprio
-    match /users/{uid} {
-      allow read: if request.auth.uid == uid || isAdmin();
-      allow write: if isAdmin();
-    }
-  }
-}
-```
+- **Múltiplas `allow` do mesmo método se SOMAM (lógica OR)** dentro do mesmo
+  `match` — o admin tem `read, write` totais; pedagógico e município somam
+  `read`/`update` mais restritos que coexistem com a do admin.
+- `isAdmin()` / `isPedagogico()` / `isMunicipio()` exigem `role` **e**
+  `isAtivo()` — um usuário com `status: 'inativo'` perde acesso mesmo com um
+  ID token Firebase Auth ainda válido.
+- O pedagógico só pode escrever um conjunto fechado de campos em
+  `relatorios` (`hasOnly([...])`) — qualquer campo novo que uma feature
+  precise gravar por essa role tem que entrar nessa lista, senão o
+  `updateDoc` volta `permission-denied`.
+- `historico` (array de auditoria de liberação — seção 4) só pode crescer,
+  nunca encolher, verificado via `.size()`. Sem Cloud Functions não dá pra
+  impedir reescrita de uma entrada antiga — limitação aceita, mesmo
+  raciocínio da chave de cripto no bundle (seção 5).
+- `municipios`/`avaliacoes`/`series` são de leitura livre para qualquer
+  usuário autenticado (não checam `isAtivo()`) — só `relatorios` (dado
+  sensível) é gated por role+status.
 
 ---
 
