@@ -140,6 +140,29 @@ users/{uid}
 > doc via `onSnapshot`) e é reforçado nas Security Rules (`isAtivo()`) — ver
 > seção 6.
 
+#### Coleção: `acessos`
+```
+acessos/{acessoId}
+  relatorioId:    string
+  municipioId:    string
+  municipioNome:  string   // denormalizado
+  avaliacaoId:    string
+  avaliacaoNome:  string   // denormalizado
+  serieId:        string
+  serieNome:      string   // denormalizado
+  userId:         string   // uid de quem abriu
+  userNome:       string   // denormalizado
+  em:             timestamp
+```
+
+Log de analytics: registra a abertura de um relatório pelo município
+(`src/pages/municipio/MunicipioReportViewer.tsx`, via
+`registrarAcesso()` em `src/api/acessos.ts`). É a **primeira e única**
+permissão de escrita que o perfil `municipio` tem no sistema — ver seção 6.
+Imutável pelo app (`allow update, delete: if false`); expurgo por retenção só
+via Console/Admin SDK. Alimenta `/admin/analytics`. Detalhes e armadilhas em
+`docs/PLANO-ANALYTICS.md`.
+
 ---
 
 ## 5. Encriptação dos Links (Web Crypto API)
@@ -219,6 +242,10 @@ Invariantes que vale ter em mente ao mexer nas regras:
 - `municipios`/`avaliacoes`/`series` são de leitura livre para qualquer
   usuário autenticado (não checam `isAtivo()`) — só `relatorios` (dado
   sensível) é gated por role+status.
+- `acessos` (seção 4) é a única coleção onde `municipio` tem `create` — trava
+  `municipioId`/`userId` no próprio usuário e exige `em == request.time`
+  (só passa gravando `serverTimestamp()`, nunca `Timestamp.now()`). Admin e
+  pedagógico leem; ninguém edita ou apaga pelo app.
 
 ---
 

@@ -66,5 +66,21 @@ service cloud.firestore {
       allow read: if request.auth.uid == uid || isAdmin();
       allow write: if isAdmin();
     }
+
+    // Analytics de uso: registro de abertura de relatório pelo município.
+    // Ver docs/PLANO-ANALYTICS.md.
+    match /acessos/{id} {
+      allow read: if isAdmin() || isPedagogico();
+
+      // Município só cria, só um registro dele mesmo, com o relógio do servidor.
+      allow create: if isMunicipio()
+        && request.resource.data.municipioId == getMunicipioId()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.em == request.time;
+
+      // Log de auditoria é imutável pelo app — expurgo por retenção via
+      // Console/Admin SDK, não pela aplicação.
+      allow update, delete: if false;
+    }
   }
 }

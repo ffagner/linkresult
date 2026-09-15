@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, AlertCircle, ShieldCheck } from 'lucide-react';
 import Logo from '@/components/lr/Logo';
 import LoadingSpinner from '@/components/lr/LoadingSpinner';
 import { buscar as buscarRelatorio } from '@/api/relatorios';
 import type { RelatorioData } from '@/api/relatorios';
+import { registrarAcesso } from '@/api/acessos';
 import { decryptLink } from '@/lib/crypto';
 import { useAuth } from '@/lib/AuthContext';
+
+// Evita inflar a frequência com F5 repetido — se o mesmo relatório já foi
+// registrado nesta aba há menos de 30 min, não registra de novo.
+const DEDUP_JANELA_MS = 30 * 60 * 1000;
 
 export default function MunicipioReportViewer() {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +20,10 @@ export default function MunicipioReportViewer() {
   const [relatorio, setRelatorio] = useState<RelatorioData | null>(null);
   const [decryptedLink, setDecryptedLink] = useState<string>('');
   const [error, setError] = useState<boolean>(false);
+  // O AuthContext recria `profile` a cada emissão do onSnapshot do próprio
+  // usuário — sem essa guarda, isso re-dispararia o efeito e registraria
+  // acesso duplicado a cada re-render, não só a cada abertura de fato.
+  const registradoParaRef = useRef<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -28,6 +37,16 @@ export default function MunicipioReportViewer() {
         setRelatorio(data);
         const link = await decryptLink(data.linkEncriptado);
         setDecryptedLink(link);
+
+        if (profile && registradoParaRef.current !== data.id) {
+          registradoParaRef.current = data.id;
+          const dedupKey = `acesso:${data.id}`;
+          const ultimoRegistro = Number(sessionStorage.getItem(dedupKey) || 0);
+          if (Date.now() - ultimoRegistro > DEDUP_JANELA_MS) {
+            sessionStorage.setItem(dedupKey, String(Date.now()));
+            void registrarAcesso(data, profile.uid, profile.nome);
+          }
+        }
       } catch (err) {
         setError(true);
       } finally {

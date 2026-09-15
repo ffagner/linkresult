@@ -23,6 +23,7 @@ const AdminRelatorios = lazy(() => import('@/pages/admin/AdminRelatorios'))
 const AdminRelatoriosLote = lazy(() => import('@/pages/admin/AdminRelatoriosLote'))
 const AdminUsuarios = lazy(() => import('@/pages/admin/AdminUsuarios'))
 const AdminReportViewer = lazy(() => import('@/pages/admin/AdminReportViewer'))
+const AdminAnalytics = lazy(() => import('@/pages/admin/AdminAnalytics'))
 
 const PedagogicoDashboard = lazy(() => import('@/pages/pedagogico/PedagogicoDashboard'))
 const PedagogicoRelatorios = lazy(() => import('@/pages/pedagogico/PedagogicoRelatorios'))
@@ -65,6 +66,7 @@ function App() {
               <Route path="/admin/relatorios/lote" element={<ProtectedRoute allowedRoles={['admin']}><AdminRelatoriosLote /></ProtectedRoute>} />
               <Route path="/admin/usuarios" element={<ProtectedRoute allowedRoles={['admin']}><AdminUsuarios /></ProtectedRoute>} />
               <Route path="/admin/relatorio/:id" element={<ProtectedRoute allowedRoles={['admin']}><AdminReportViewer /></ProtectedRoute>} />
+              <Route path="/admin/analytics" element={<ProtectedRoute allowedRoles={['admin']}><AdminAnalytics /></ProtectedRoute>} />
 
               <Route path="/pedagogico" element={<ProtectedRoute allowedRoles={['pedagogico']}><PedagogicoDashboard /></ProtectedRoute>} />
               <Route path="/pedagogico/relatorios" element={<ProtectedRoute allowedRoles={['pedagogico']}><PedagogicoRelatorios /></ProtectedRoute>} />

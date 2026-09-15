@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import {
   LayoutDashboard, Building2, ClipboardList, BookOpen, Users, FileText,
-  LogOut, User, Menu, X, ChevronRight, BarChart3, CheckSquare, type LucideIcon
+  LogOut, User, Menu, X, ChevronRight, BarChart3, CheckSquare, Activity, type LucideIcon
 } from 'lucide-react';
 import Logo from './Logo';
 import ThemeToggle from './ThemeToggle';
@@ -20,6 +20,7 @@ const adminNav: NavItem[] = [
   { label: 'Avaliações', href: '/admin/avaliacoes', icon: ClipboardList },
   { label: 'Séries', href: '/admin/series', icon: BookOpen },
   { label: 'Relatórios', href: '/admin/relatorios', icon: FileText },
+  { label: 'Analytics', href: '/admin/analytics', icon: Activity },
   { label: 'Usuários', href: '/admin/usuarios', icon: Users },
 ];
 
