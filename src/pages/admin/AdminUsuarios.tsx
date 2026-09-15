@@ -5,6 +5,7 @@ import { listar as listarMunicipios } from '@/api/municipios';
 import AppLayout from '@/components/lr/AppLayout';
 import PageHeader from '@/components/lr/PageHeader';
 import DataTable from '@/components/lr/DataTable';
+import FilterBar from '@/components/lr/FilterBar';
 import FormModal from '@/components/lr/FormModal';
 import StatusBadge from '@/components/lr/StatusBadge';
 import ConfirmDialog from '@/components/lr/ConfirmDialog';
@@ -42,6 +43,13 @@ export default function AdminUsuarios() {
     const matchRole = filterRole === 'todos' || u.role === filterRole;
     return matchSearch && matchRole;
   });
+
+  const hasActiveFilters = search !== '' || filterRole !== 'todos';
+
+  const clearFilters = (): void => {
+    setSearch('');
+    setFilterRole('todos');
+  };
 
   const openCreate = (): void => { setEditItem(null); setForm({ nome: '', email: '', senha: '', role: 'municipio', municipioId: '' }); setModalOpen(true); };
   const openEdit = (u: any): void => { setEditItem(u); setForm({ nome: u.nome, email: u.email, senha: '', role: u.role, municipioId: u.municipioId || '' }); setModalOpen(true); };
@@ -90,7 +98,7 @@ export default function AdminUsuarios() {
     { header: 'Município', render: (u) => <span className="text-sm text-muted-foreground">{u.municipioNome || '—'}</span> },
     { header: 'Status', render: (u) => <StatusBadge status={u.status} /> },
     {
-      header: 'Ações', className: 'text-right',
+      header: 'Ações', className: 'text-right', isActions: true,
       render: (u) => (
         <div className="flex items-center justify-end gap-2">
           <button onClick={() => openEdit(u)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
@@ -120,13 +128,19 @@ export default function AdminUsuarios() {
         }
       />
 
-      <div className="flex flex-wrap gap-3 mb-4">
-        <div className="relative flex-1 min-w-48">
+      <FilterBar
+        resultCount={filtered.length}
+        totalCount={data.length}
+        hasActiveFilters={hasActiveFilters}
+        onClear={clearFilters}
+        itemLabel="usuários"
+      >
+        <div className="relative flex-1 sm:min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar por nome ou e-mail..." value={search} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
         </div>
         <Select value={filterRole} onValueChange={setFilterRole}>
-          <SelectTrigger className="w-36 h-10 rounded-xl">
+          <SelectTrigger className="w-full sm:w-36 h-10 rounded-xl">
             <Filter className="w-4 h-4 mr-1 text-muted-foreground" />
             <SelectValue />
           </SelectTrigger>
@@ -137,7 +151,7 @@ export default function AdminUsuarios() {
             <SelectItem value="municipio">Município</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </FilterBar>
 
       <DataTable columns={columns} data={filtered} loading={loading} emptyTitle="Nenhum usuário encontrado" emptyDescription="Crie o primeiro usuário clicando em 'Novo Usuário'." />
 

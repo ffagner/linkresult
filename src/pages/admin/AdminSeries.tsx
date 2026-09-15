@@ -5,6 +5,8 @@ import AppLayout from '@/components/lr/AppLayout';
 import PageHeader from '@/components/lr/PageHeader';
 import FormModal from '@/components/lr/FormModal';
 import ConfirmDialog from '@/components/lr/ConfirmDialog';
+import LoadingSpinner from '@/components/lr/LoadingSpinner';
+import EmptyState from '@/components/lr/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -68,33 +70,35 @@ export default function AdminSeries() {
       />
 
       <div className="bg-card rounded-2xl border border-border overflow-hidden">
-        <div className="px-4 py-3 bg-muted/40 border-b border-border">
-          <div className="grid grid-cols-12 gap-4">
-            <div className="col-span-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Ord.</div>
-            <div className="col-span-8 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nome</div>
-            <div className="col-span-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Ações</div>
+        <div className="hidden sm:block px-4 py-3 bg-muted/40 border-b border-border">
+          <div className="flex items-center gap-4">
+            <div className="w-16 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Ord.</div>
+            <div className="flex-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nome</div>
+            <div className="w-24 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Ações</div>
           </div>
         </div>
         {loading ? (
-          <div className="text-center py-12 text-muted-foreground text-sm">Carregando...</div>
+          <LoadingSpinner text="Carregando séries..." />
         ) : data.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground text-sm">
-            Nenhuma série cadastrada. Clique em "Nova Série" para começar.
-          </div>
-        ) : data.map((serie, idx) => (
+          <EmptyState
+            icon={BookOpen}
+            title="Nenhuma série cadastrada"
+            description='Clique em "Nova Série" para começar a cadastrar as séries e etapas.'
+          />
+        ) : data.map(serie => (
           <div key={serie.id} className="px-4 py-3.5 border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
-            <div className="grid grid-cols-12 gap-4 items-center">
-              <div className="col-span-1 flex items-center gap-2">
-                <GripVertical className="w-4 h-4 text-muted-foreground/40 cursor-grab" />
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-10 sm:w-16 flex items-center gap-2 flex-shrink-0">
+                <GripVertical className="hidden sm:block w-4 h-4 text-muted-foreground/40 cursor-grab" />
                 <span className="text-sm font-mono text-muted-foreground">{serie.ordem}</span>
               </div>
-              <div className="col-span-8 flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+              <div className="flex-1 flex items-center gap-2 min-w-0">
+                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <BookOpen className="w-3.5 h-3.5 text-primary" />
                 </div>
-                <span className="text-sm font-medium">{serie.nome}</span>
+                <span className="text-sm font-medium truncate">{serie.nome}</span>
               </div>
-              <div className="col-span-3 flex items-center justify-end gap-2">
+              <div className="w-24 flex items-center justify-end gap-2 flex-shrink-0">
                 <button onClick={() => openEdit(serie)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
                   <Pencil className="w-4 h-4" />
                 </button>

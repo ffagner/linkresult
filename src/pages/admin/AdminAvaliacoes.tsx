@@ -4,6 +4,7 @@ import { listar, criar, atualizar, excluir } from '@/api/avaliacoes';
 import AppLayout from '@/components/lr/AppLayout';
 import PageHeader from '@/components/lr/PageHeader';
 import DataTable from '@/components/lr/DataTable';
+import FilterBar from '@/components/lr/FilterBar';
 import FormModal from '@/components/lr/FormModal';
 import ConfirmDialog from '@/components/lr/ConfirmDialog';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,13 @@ export default function AdminAvaliacoes() {
     const matchAno = filterAno === 'todos' || String(a.ano) === filterAno;
     return matchSearch && matchAno;
   });
+
+  const hasActiveFilters = search !== '' || filterAno !== 'todos';
+
+  const clearFilters = (): void => {
+    setSearch('');
+    setFilterAno('todos');
+  };
 
   const openCreate = (): void => { setEditItem(null); setForm({ nome: '', ano: '' }); setModalOpen(true); };
   const openEdit = (item: any): void => { setEditItem(item); setForm({ nome: item.nome, ano: String(item.ano) }); setModalOpen(true); };
@@ -73,7 +81,7 @@ export default function AdminAvaliacoes() {
     )},
     { header: 'Cadastrado em', key: 'createdAt', render: (row) => <span className="text-muted-foreground">{row.createdAt}</span> },
     {
-      header: 'Ações', className: 'text-right',
+      header: 'Ações', className: 'text-right', isActions: true,
       render: (row) => (
         <div className="flex items-center justify-end gap-2">
           <button onClick={() => openEdit(row)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
@@ -100,13 +108,19 @@ export default function AdminAvaliacoes() {
         }
       />
 
-      <div className="flex gap-3 mb-4 flex-wrap">
-        <div className="relative flex-1 min-w-48">
+      <FilterBar
+        resultCount={filtered.length}
+        totalCount={data.length}
+        hasActiveFilters={hasActiveFilters}
+        onClear={clearFilters}
+        itemLabel="avaliações"
+      >
+        <div className="relative flex-1 sm:min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar por nome..." value={search} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
         </div>
         <Select value={filterAno} onValueChange={setFilterAno}>
-          <SelectTrigger className="w-36 h-10 rounded-xl">
+          <SelectTrigger className="w-full sm:w-36 h-10 rounded-xl">
             <Filter className="w-4 h-4 mr-1.5 text-muted-foreground" />
             <SelectValue />
           </SelectTrigger>
@@ -115,7 +129,7 @@ export default function AdminAvaliacoes() {
             {anos.map(a => <SelectItem key={a} value={String(a)}>{a}</SelectItem>)}
           </SelectContent>
         </Select>
-      </div>
+      </FilterBar>
 
       <DataTable columns={columns} data={filtered} loading={loading} emptyTitle="Nenhuma avaliação encontrada" emptyDescription="Clique em 'Nova Avaliação' para adicionar." />
 

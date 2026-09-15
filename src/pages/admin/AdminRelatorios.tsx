@@ -11,6 +11,7 @@ import PageHeader from '@/components/lr/PageHeader';
 import DataTable from '@/components/lr/DataTable';
 import FormModal from '@/components/lr/FormModal';
 import ConfirmDialog from '@/components/lr/ConfirmDialog';
+import FilterBar from '@/components/lr/FilterBar';
 import StatusBadge from '@/components/lr/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,7 @@ export default function AdminRelatorios() {
   const [search, setSearch] = useState<string>('');
   const [filterMunicipio, setFilterMunicipio] = useState<string>('todos');
   const [filterAvaliacao, setFilterAvaliacao] = useState<string>('todos');
+  const [filterSerie, setFilterSerie] = useState<string>('todos');
   const [filterStatus, setFilterStatus] = useState<string>('todos');
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [editItem, setEditItem] = useState<any>(null);
@@ -58,9 +60,21 @@ export default function AdminRelatorios() {
       (r.serieNome || '').toLowerCase().includes(search.toLowerCase());
     const matchM = filterMunicipio === 'todos' || r.municipioId === filterMunicipio;
     const matchA = filterAvaliacao === 'todos' || r.avaliacaoId === filterAvaliacao;
+    const matchSerie = filterSerie === 'todos' || r.serieId === filterSerie;
     const matchS = filterStatus === 'todos' || (filterStatus === 'liberado' ? r.liberado : !r.liberado);
-    return matchSearch && matchM && matchA && matchS;
+    return matchSearch && matchM && matchA && matchSerie && matchS;
   });
+
+  const hasActiveFilters = search !== '' || filterMunicipio !== 'todos' ||
+    filterAvaliacao !== 'todos' || filterSerie !== 'todos' || filterStatus !== 'todos';
+
+  const clearFilters = (): void => {
+    setSearch('');
+    setFilterMunicipio('todos');
+    setFilterAvaliacao('todos');
+    setFilterSerie('todos');
+    setFilterStatus('todos');
+  };
 
   const openCreate = (): void => { setEditItem(null); setForm({ municipioId: '', avaliacaoId: '', serieId: '', link: '' }); setModalOpen(true); };
   const openEdit = (item: any): void => {
@@ -121,7 +135,7 @@ export default function AdminRelatorios() {
     { header: 'Série', render: (r) => <span className="text-muted-foreground">{r.serieNome}</span> },
     { header: 'Status', render: (r) => <StatusBadge status={r.liberado ? 'liberado' : 'pendente'} /> },
     {
-      header: 'Ações', className: 'text-right',
+      header: 'Ações', className: 'text-right', isActions: true,
       render: (r) => (
         <div className="flex items-center justify-end gap-2">
           <Link to={`/admin/relatorio/${r.id}`}>
@@ -146,14 +160,14 @@ export default function AdminRelatorios() {
         title="Relatórios"
         subtitle={`${data.length} relatórios cadastrados`}
         actions={
-          <div className="flex gap-2">
-            <Link to="/admin/relatorios/lote">
-              <Button variant="outline" className="rounded-xl gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Link to="/admin/relatorios/lote" className="w-full sm:w-auto">
+              <Button variant="outline" className="rounded-xl gap-2 w-full sm:w-auto">
                 <Layers className="w-4 h-4" />
                 Cadastro em Lote
               </Button>
             </Link>
-            <Button onClick={openCreate} className="rounded-xl gap-2">
+            <Button onClick={openCreate} className="rounded-xl gap-2 w-full sm:w-auto">
               <Plus className="w-4 h-4" />
               Novo Relatório
             </Button>
@@ -161,13 +175,19 @@ export default function AdminRelatorios() {
         }
       />
 
-      <div className="flex flex-wrap gap-3 mb-4">
-        <div className="relative flex-1 min-w-48">
+      <FilterBar
+        resultCount={filtered.length}
+        totalCount={data.length}
+        hasActiveFilters={hasActiveFilters}
+        onClear={clearFilters}
+        itemLabel="relatórios"
+      >
+        <div className="relative flex-1 sm:min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar..." value={search} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
         </div>
         <Select value={filterMunicipio} onValueChange={setFilterMunicipio}>
-          <SelectTrigger className="w-44 h-10 rounded-xl">
+          <SelectTrigger className="w-full sm:w-44 h-10 rounded-xl">
             <SelectValue placeholder="Município" />
           </SelectTrigger>
           <SelectContent>
@@ -176,7 +196,7 @@ export default function AdminRelatorios() {
           </SelectContent>
         </Select>
         <Select value={filterAvaliacao} onValueChange={setFilterAvaliacao}>
-          <SelectTrigger className="w-44 h-10 rounded-xl">
+          <SelectTrigger className="w-full sm:w-44 h-10 rounded-xl">
             <SelectValue placeholder="Avaliação" />
           </SelectTrigger>
           <SelectContent>
@@ -184,8 +204,17 @@ export default function AdminRelatorios() {
             {avaliacoes.map(a => <SelectItem key={a.id} value={a.id}>{a.nome} ({a.ano})</SelectItem>)}
           </SelectContent>
         </Select>
+        <Select value={filterSerie} onValueChange={setFilterSerie}>
+          <SelectTrigger className="w-full sm:w-44 h-10 rounded-xl">
+            <SelectValue placeholder="Série" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todas as séries</SelectItem>
+            {series.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
+          </SelectContent>
+        </Select>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-36 h-10 rounded-xl">
+          <SelectTrigger className="w-full sm:w-36 h-10 rounded-xl">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -194,7 +223,7 @@ export default function AdminRelatorios() {
             <SelectItem value="pendente">Pendente</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </FilterBar>
 
       <DataTable columns={columns} data={filtered} loading={loading} emptyTitle="Nenhum relatório encontrado" emptyDescription="Adicione relatórios individuais ou use o cadastro em lote." />
 

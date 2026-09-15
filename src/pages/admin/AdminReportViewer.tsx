@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Monitor, AlertCircle } from 'lucide-react';
 import Logo from '@/components/lr/Logo';
+import LoadingSpinner from '@/components/lr/LoadingSpinner';
 import StatusBadge from '@/components/lr/StatusBadge';
 import { useAuth } from '@/lib/AuthContext';
 import { buscar as buscarRelatorio } from '@/api/relatorios';
@@ -55,12 +56,21 @@ export default function AdminReportViewer() {
         </div>
       </header>
 
+      {/* Contexto do relatório em telas pequenas, onde o header não cabe */}
+      {relatorio && (
+        <div className="sm:hidden px-4 py-2 bg-slate-800/60 border-b border-slate-700 flex-shrink-0">
+          <p className="text-xs text-slate-300 truncate">
+            <span className="font-medium text-white">{relatorio.municipioNome}</span>
+            {' — '}{relatorio.avaliacaoNome}{' — '}{relatorio.serieNome}
+          </p>
+        </div>
+      )}
+
       {/* Viewer */}
       <div className="flex-1 relative overflow-hidden">
         {loading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900">
-            <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
-            <p className="text-slate-400 text-sm">Carregando relatório...</p>
+            <LoadingSpinner size="lg" text="Carregando relatório..." />
           </div>
         ) : error ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900">

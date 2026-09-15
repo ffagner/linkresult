@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BarChart3, Play, LogOut, User, FileText } from 'lucide-react';
+import { BarChart3, Play, LogOut, User, FileText, Search, X } from 'lucide-react';
 import Logo from '@/components/lr/Logo';
 import EmptyState from '@/components/lr/EmptyState';
 import LoadingSpinner from '@/components/lr/LoadingSpinner';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { listarPorMunicipio as listarRelatoriosPorMunicipio } from '@/api/relatorios';
 import type { RelatorioData } from '@/api/relatorios';
@@ -17,6 +18,8 @@ export default function MunicipioRelatorios() {
   const [relatorios, setRelatorios] = useState<RelatorioData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [filterAvaliacao, setFilterAvaliacao] = useState<string>('todos');
+  const [filterSerie, setFilterSerie] = useState<string>('todos');
+  const [search, setSearch] = useState<string>('');
 
   useEffect(() => {
     async function load() {
@@ -37,9 +40,29 @@ export default function MunicipioRelatorios() {
     new Map(relatorios.map(r => [r.avaliacaoId, { id: r.avaliacaoId, nome: r.avaliacaoNome }])).values()
   );
 
-  const filtered = relatorios.filter(r =>
-    filterAvaliacao === 'todos' || r.avaliacaoId === filterAvaliacao
+  // Séries derivadas dos relatórios liberados, na ordem em que vieram do Firestore
+  const seriesDisponiveis = Array.from(
+    new Map(relatorios.map(r => [r.serieId, { id: r.serieId, nome: r.serieNome }])).values()
   );
+
+  const termo = search.trim().toLowerCase();
+
+  const filtered = relatorios.filter(r => {
+    const matchAvaliacao = filterAvaliacao === 'todos' || r.avaliacaoId === filterAvaliacao;
+    const matchSerie = filterSerie === 'todos' || r.serieId === filterSerie;
+    const matchSearch = termo === '' ||
+      (r.serieNome || '').toLowerCase().includes(termo) ||
+      (r.avaliacaoNome || '').toLowerCase().includes(termo);
+    return matchAvaliacao && matchSerie && matchSearch;
+  });
+
+  const hasActiveFilters = search !== '' || filterAvaliacao !== 'todos' || filterSerie !== 'todos';
+
+  const clearFilters = (): void => {
+    setSearch('');
+    setFilterAvaliacao('todos');
+    setFilterSerie('todos');
+  };
 
   const grouped = filtered.reduce<Record<string, { avaliacaoNome: string; items: RelatorioData[] }>>((acc, r) => {
     const key = r.avaliacaoId;
@@ -87,24 +110,61 @@ export default function MunicipioRelatorios() {
         </div>
 
         {relatorios.length > 0 && (
-          <div className="flex items-center gap-3 mb-6">
-            <Select value={filterAvaliacao} onValueChange={setFilterAvaliacao}>
-              <SelectTrigger className="w-56 h-9 rounded-xl text-sm">
-                <SelectValue placeholder="Todas as avaliações" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todas as avaliações</SelectItem>
-                {avaliacoes.map(a => <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>)}
-              </SelectContent>
-            </Select>
+          <div className="mb-6 space-y-2">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por série ou avaliação..."
+                  value={search}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+                  className="pl-9 h-9 rounded-xl text-sm"
+                />
+              </div>
+              <Select value={filterAvaliacao} onValueChange={setFilterAvaliacao}>
+                <SelectTrigger className="w-full sm:w-56 h-9 rounded-xl text-sm">
+                  <SelectValue placeholder="Todas as avaliações" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todas as avaliações</SelectItem>
+                  {avaliacoes.map(a => <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={filterSerie} onValueChange={setFilterSerie}>
+                <SelectTrigger className="w-full sm:w-44 h-9 rounded-xl text-sm">
+                  <SelectValue placeholder="Todas as séries" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todas as séries</SelectItem>
+                  {seriesDisponiveis.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            {hasActiveFilters && (
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs text-muted-foreground">
+                  {filtered.length} de {relatorios.length} relatório(s)
+                </p>
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  Limpar filtros
+                </button>
+              </div>
+            )}
           </div>
         )}
 
         {filtered.length === 0 ? (
           <EmptyState
             icon={FileText}
-            title="Nenhum relatório disponível"
-            description="Ainda não há relatórios liberados para o seu município. Entre em contato com a equipe pedagógica."
+            title={hasActiveFilters ? 'Nenhum relatório encontrado' : 'Nenhum relatório disponível'}
+            description={hasActiveFilters
+              ? 'Nenhum relatório corresponde à busca ou aos filtros selecionados.'
+              : 'Ainda não há relatórios liberados para o seu município. Entre em contato com a equipe pedagógica.'}
           />
         ) : (
           <div className="space-y-6 animate-fade-in">

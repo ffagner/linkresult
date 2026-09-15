@@ -5,6 +5,7 @@ import AppLayout from '@/components/lr/AppLayout';
 import PageHeader from '@/components/lr/PageHeader';
 import DataTable from '@/components/lr/DataTable';
 import StatusBadge from '@/components/lr/StatusBadge';
+import FilterBar from '@/components/lr/FilterBar';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { listar, liberar } from '@/api/relatorios';
@@ -13,6 +14,8 @@ import { listar as listarMunicipios } from '@/api/municipios';
 import type { MunicipioData } from '@/api/municipios';
 import { listar as listarAvaliacoes } from '@/api/avaliacoes';
 import type { AvaliacaoData } from '@/api/avaliacoes';
+import { listar as listarSeries } from '@/api/series';
+import type { SerieData } from '@/api/series';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,23 +25,28 @@ export default function PedagogicoRelatorios() {
   const [data, setData] = useState<RelatorioData[]>([]);
   const [municipios, setMunicipios] = useState<MunicipioData[]>([]);
   const [avaliacoes, setAvaliacoes] = useState<AvaliacaoData[]>([]);
+  const [series, setSeries] = useState<SerieData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [search, setSearch] = useState<string>('');
   const [filterMunicipio, setFilterMunicipio] = useState<string>('todos');
+  const [filterAvaliacao, setFilterAvaliacao] = useState<string>('todos');
+  const [filterSerie, setFilterSerie] = useState<string>('todos');
   const [filterStatus, setFilterStatus] = useState<string>('todos');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
       try {
-        const [relatoriosData, municipiosData, avaliacoesData] = await Promise.all([
+        const [relatoriosData, municipiosData, avaliacoesData, seriesData] = await Promise.all([
           listar(),
           listarMunicipios(),
           listarAvaliacoes(),
+          listarSeries(),
         ]);
         setData(relatoriosData);
         setMunicipios(municipiosData);
         setAvaliacoes(avaliacoesData);
+        setSeries(seriesData);
       } catch (err) {
         toast({ title: 'Erro ao carregar', description: err.message, variant: 'destructive' });
       } finally {
@@ -53,9 +61,22 @@ export default function PedagogicoRelatorios() {
       (r.avaliacaoNome || '').toLowerCase().includes(search.toLowerCase()) ||
       (r.serieNome || '').toLowerCase().includes(search.toLowerCase());
     const matchM = filterMunicipio === 'todos' || r.municipioId === filterMunicipio;
+    const matchA = filterAvaliacao === 'todos' || r.avaliacaoId === filterAvaliacao;
+    const matchSerie = filterSerie === 'todos' || r.serieId === filterSerie;
     const matchS = filterStatus === 'todos' || (filterStatus === 'liberado' ? r.liberado : !r.liberado);
-    return matchSearch && matchM && matchS;
+    return matchSearch && matchM && matchA && matchSerie && matchS;
   });
+
+  const hasActiveFilters = search !== '' || filterMunicipio !== 'todos' ||
+    filterAvaliacao !== 'todos' || filterSerie !== 'todos' || filterStatus !== 'todos';
+
+  const clearFilters = (): void => {
+    setSearch('');
+    setFilterMunicipio('todos');
+    setFilterAvaliacao('todos');
+    setFilterSerie('todos');
+    setFilterStatus('todos');
+  };
 
   const handleToggle = async (r: RelatorioData): Promise<void> => {
     setUpdatingId(r.id);
@@ -79,7 +100,7 @@ export default function PedagogicoRelatorios() {
     { header: 'Série', render: (r) => <span className="text-muted-foreground">{r.serieNome}</span> },
     { header: 'Status', render: (r) => <StatusBadge status={r.liberado ? 'liberado' : 'pendente'} /> },
     {
-      header: 'Ações', className: 'text-right',
+      header: 'Ações', className: 'text-right', isActions: true,
       render: (r) => (
         <div className="flex items-center justify-end gap-2">
           <Link to={`/pedagogico/relatorio/${r.id}`}>
@@ -116,27 +137,47 @@ export default function PedagogicoRelatorios() {
         subtitle="Analise e controle a liberação para os municípios"
       />
 
-      <div className="flex flex-wrap gap-3 mb-4">
-        <div className="relative flex-1 min-w-48">
+      <FilterBar
+        resultCount={filtered.length}
+        totalCount={data.length}
+        hasActiveFilters={hasActiveFilters}
+        onClear={clearFilters}
+        itemLabel="relatórios"
+      >
+        <div className="relative flex-1 sm:min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar..." value={search} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
         </div>
         <Select value={filterMunicipio} onValueChange={setFilterMunicipio}>
-          <SelectTrigger className="w-44 h-10 rounded-xl"><SelectValue placeholder="Município" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-44 h-10 rounded-xl"><SelectValue placeholder="Município" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todos os municípios</SelectItem>
             {municipios.map(m => <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>)}
           </SelectContent>
         </Select>
+        <Select value={filterAvaliacao} onValueChange={setFilterAvaliacao}>
+          <SelectTrigger className="w-full sm:w-44 h-10 rounded-xl"><SelectValue placeholder="Avaliação" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todas as avaliações</SelectItem>
+            {avaliacoes.map(a => <SelectItem key={a.id} value={a.id}>{a.nome} ({a.ano})</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={filterSerie} onValueChange={setFilterSerie}>
+          <SelectTrigger className="w-full sm:w-44 h-10 rounded-xl"><SelectValue placeholder="Série" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todas as séries</SelectItem>
+            {series.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
+          </SelectContent>
+        </Select>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-36 h-10 rounded-xl"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-36 h-10 rounded-xl"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todos</SelectItem>
             <SelectItem value="liberado">Liberados</SelectItem>
             <SelectItem value="pendente">Pendentes</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </FilterBar>
 
       <DataTable columns={columns} data={filtered} loading={loading} emptyTitle="Nenhum relatório encontrado" emptyDescription="Ajuste os filtros para ver os resultados." />
     </AppLayout>

@@ -4,6 +4,7 @@ import { listar, criar, atualizar, excluir } from '@/api/municipios';
 import AppLayout from '@/components/lr/AppLayout';
 import PageHeader from '@/components/lr/PageHeader';
 import DataTable from '@/components/lr/DataTable';
+import FilterBar from '@/components/lr/FilterBar';
 import FormModal from '@/components/lr/FormModal';
 import ConfirmDialog from '@/components/lr/ConfirmDialog';
 import { Button } from '@/components/ui/button';
@@ -68,7 +69,7 @@ export default function AdminMunicipios() {
     { header: 'Estado', key: 'estado', render: (row) => <span className="text-muted-foreground">{row.estado}</span> },
     { header: 'Cadastrado em', key: 'createdAt', render: (row) => <span className="text-muted-foreground">{row.createdAt}</span> },
     {
-      header: 'Ações', key: 'acoes', className: 'text-right',
+      header: 'Ações', key: 'acoes', className: 'text-right', isActions: true,
       render: (row) => (
         <div className="flex items-center justify-end gap-2">
           <button onClick={() => openEdit(row)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
@@ -94,10 +95,18 @@ export default function AdminMunicipios() {
         }
       />
 
-      <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Buscar por nome ou estado..." value={search} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
-      </div>
+      <FilterBar
+        resultCount={filtered.length}
+        totalCount={data.length}
+        hasActiveFilters={search !== ''}
+        onClear={() => setSearch('')}
+        itemLabel="municípios"
+      >
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="Buscar por nome ou estado..." value={search} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)} className="pl-9 h-10 rounded-xl" />
+        </div>
+      </FilterBar>
 
       <DataTable columns={columns} data={filtered} loading={loading} emptyTitle="Nenhum município encontrado" emptyDescription="Clique em 'Novo Município' para começar a cadastrar." />
 

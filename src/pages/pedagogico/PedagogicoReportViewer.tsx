@@ -95,6 +95,16 @@ export default function PedagogicoReportViewer() {
         </div>
       </header>
 
+      {/* Contexto do relatório em telas pequenas, onde o header não cabe */}
+      {relatorio && (
+        <div className="sm:hidden px-4 py-2 bg-slate-800/60 border-b border-slate-700 flex-shrink-0">
+          <p className="text-xs text-slate-300 truncate">
+            <span className="font-medium text-white">{relatorio.municipioNome}</span>
+            {' — '}{relatorio.avaliacaoNome}{' — '}{relatorio.serieNome}
+          </p>
+        </div>
+      )}
+
       <div className="flex-1 relative overflow-hidden">
         {loading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900">
