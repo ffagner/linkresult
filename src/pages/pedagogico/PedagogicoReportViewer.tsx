@@ -70,7 +70,7 @@ export default function PedagogicoReportViewer() {
             <div className="hidden sm:flex items-center gap-2 text-slate-300 text-sm">
               <span className="font-medium">{relatorio.municipioNome}</span>
               <span className="text-slate-500">—</span>
-              <span>{relatorio.avaliacaoNome}</span>
+              <span>{relatorio.avaliacaoNome} ({relatorio.ano})</span>
               <span className="text-slate-500">—</span>
               <span>{relatorio.serieNome}</span>
             </div>
@@ -102,7 +102,7 @@ export default function PedagogicoReportViewer() {
         <div className="sm:hidden px-4 py-2 bg-slate-800/60 border-b border-slate-700 flex-shrink-0">
           <p className="text-xs text-slate-300 truncate">
             <span className="font-medium text-white">{relatorio.municipioNome}</span>
-            {' — '}{relatorio.avaliacaoNome}{' — '}{relatorio.serieNome}
+            {' — '}{relatorio.avaliacaoNome} ({relatorio.ano}){' — '}{relatorio.serieNome}
           </p>
         </div>
       )}

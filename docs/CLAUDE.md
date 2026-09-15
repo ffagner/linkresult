@@ -104,6 +104,7 @@ relatorios/{relatorioId}
   municipioId:      string (ref → municipios)
   avaliacaoId:      string (ref → avaliacoes)
   serieId:          string (ref → series)
+  ano:              number  // ano de referência do relatório — independente do `ano` da avaliação; permite reusar a mesma avaliação (ex.: "CADERNO 1") ano após ano
   linkEncriptado:   string  // Link do Power BI encriptado via Web Crypto API
   liberado:         boolean (default: false)
   liberadoEm:       timestamp | null   // desde quando está liberado AGORA (revogar apaga)

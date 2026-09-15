@@ -32,6 +32,7 @@ export default function AdminRelatoriosLote() {
   const [series, setSeries] = useState<SerieData[]>([]);
   const [municipioId, setMunicipioId] = useState<string>('');
   const [avaliacaoId, setAvaliacaoId] = useState<string>('');
+  const [ano, setAno] = useState<string>(String(new Date().getFullYear()));
   const [items, setItems] = useState<LoteItem[]>([{ serieId: '', link: '', id: Date.now() }]);
   const [saving, setSaving] = useState<boolean>(false);
   const [saved, setSaved] = useState<boolean>(false);
@@ -72,6 +73,7 @@ export default function AdminRelatoriosLote() {
         municipioNome: mun?.nome || '',
         avaliacaoId,
         avaliacaoNome: ava?.nome || '',
+        ano: parseInt(ano),
         itens,
       });
       setSaving(false);
@@ -124,7 +126,7 @@ export default function AdminRelatoriosLote() {
               <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold">1</span>
               Selecione o município e a avaliação
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1.5">
                 <Label>Município</Label>
                 <Select value={municipioId} onValueChange={setMunicipioId} required>
@@ -138,6 +140,10 @@ export default function AdminRelatoriosLote() {
                   <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Selecione a avaliação" /></SelectTrigger>
                   <SelectContent>{avaliacoes.map(a => <SelectItem key={a.id} value={a.id}>{a.nome} ({a.ano})</SelectItem>)}</SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Ano</Label>
+                <Input type="number" placeholder="2026" value={ano} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAno(e.target.value)} className="rounded-xl h-10" required />
               </div>
             </div>
           </div>
@@ -219,7 +225,7 @@ export default function AdminRelatoriosLote() {
             <Link to="/admin/relatorios" className="flex-1">
               <Button type="button" variant="outline" className="w-full rounded-xl" disabled={saving}>Cancelar</Button>
             </Link>
-            <Button type="submit" disabled={saving || !municipioId || !avaliacaoId} className="flex-1 rounded-xl">
+            <Button type="submit" disabled={saving || !municipioId || !avaliacaoId || !ano} className="flex-1 rounded-xl">
               {saving ? 'Salvando...' : `Salvar ${items.length} relatório(s)`}
             </Button>
           </div>

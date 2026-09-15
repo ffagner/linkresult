@@ -47,7 +47,7 @@ export default function AdminReportViewer() {
           <div className="hidden sm:flex items-center gap-2 text-slate-300 text-sm">
             <span className="font-medium">{relatorio?.municipioNome}</span>
             <span className="text-slate-500">—</span>
-            <span>{relatorio?.avaliacaoNome}</span>
+            <span>{relatorio?.avaliacaoNome} {relatorio && `(${relatorio.ano})`}</span>
             <span className="text-slate-500">—</span>
             <span>{relatorio?.serieNome}</span>
           </div>
@@ -62,7 +62,7 @@ export default function AdminReportViewer() {
         <div className="sm:hidden px-4 py-2 bg-slate-800/60 border-b border-slate-700 flex-shrink-0">
           <p className="text-xs text-slate-300 truncate">
             <span className="font-medium text-white">{relatorio.municipioNome}</span>
-            {' — '}{relatorio.avaliacaoNome}{' — '}{relatorio.serieNome}
+            {' — '}{relatorio.avaliacaoNome} ({relatorio.ano}){' — '}{relatorio.serieNome}
           </p>
         </div>
       )}
@@ -87,7 +87,7 @@ export default function AdminReportViewer() {
                 <Monitor className="w-10 h-10 text-blue-400" />
               </div>
               <h3 className="text-white font-semibold text-lg mb-2">Relatório Power BI</h3>
-              <p className="text-slate-400 text-sm mb-1">{relatorio?.municipioNome} — {relatorio?.avaliacaoNome}</p>
+              <p className="text-slate-400 text-sm mb-1">{relatorio?.municipioNome} — {relatorio?.avaliacaoNome} {relatorio && `(${relatorio.ano})`}</p>
               <p className="text-slate-500 text-sm">{relatorio?.serieNome}</p>
               {!relatorio?.linkEncriptado && (
                 <div className="mt-6 px-6 py-3 bg-amber-600/20 rounded-xl border border-amber-500/30">

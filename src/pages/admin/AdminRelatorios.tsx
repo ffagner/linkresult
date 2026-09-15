@@ -37,11 +37,12 @@ export default function AdminRelatorios() {
   const [filterMunicipio, setFilterMunicipio] = useState<string>('todos');
   const [filterAvaliacao, setFilterAvaliacao] = useState<string>('todos');
   const [filterSerie, setFilterSerie] = useState<string>('todos');
+  const [filterAno, setFilterAno] = useState<string>('todos');
   const [filterStatus, setFilterStatus] = useState<string>('todos');
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [editItem, setEditItem] = useState<RelatorioData | null>(null);
   const [deleteItem, setDeleteItem] = useState<RelatorioData | null>(null);
-  const [form, setForm] = useState<{ municipioId: string; avaliacaoId: string; serieId: string; link: string }>({ municipioId: '', avaliacaoId: '', serieId: '', link: '' });
+  const [form, setForm] = useState<{ municipioId: string; avaliacaoId: string; serieId: string; ano: string; link: string }>({ municipioId: '', avaliacaoId: '', serieId: '', ano: String(new Date().getFullYear()), link: '' });
   const [saving, setSaving] = useState<boolean>(false);
 
   // Listas para os selects de filtro/formulário — carregadas uma vez.
@@ -65,31 +66,35 @@ export default function AdminRelatorios() {
     });
   }, [filterMunicipio]);
 
+  const anos = [...new Set(data.map(r => r.ano))].sort((a, b) => b - a);
+
   const filtered = data.filter(r => {
     const matchSearch = (r.municipioNome || '').toLowerCase().includes(search.toLowerCase()) ||
       (r.avaliacaoNome || '').toLowerCase().includes(search.toLowerCase()) ||
       (r.serieNome || '').toLowerCase().includes(search.toLowerCase());
     const matchA = filterAvaliacao === 'todos' || r.avaliacaoId === filterAvaliacao;
     const matchSerie = filterSerie === 'todos' || r.serieId === filterSerie;
+    const matchAno = filterAno === 'todos' || String(r.ano) === filterAno;
     const matchS = filterStatus === 'todos' || (filterStatus === 'liberado' ? r.liberado : !r.liberado);
-    return matchSearch && matchA && matchSerie && matchS;
+    return matchSearch && matchA && matchSerie && matchAno && matchS;
   });
 
   const hasActiveFilters = search !== '' || filterMunicipio !== 'todos' ||
-    filterAvaliacao !== 'todos' || filterSerie !== 'todos' || filterStatus !== 'todos';
+    filterAvaliacao !== 'todos' || filterSerie !== 'todos' || filterAno !== 'todos' || filterStatus !== 'todos';
 
   const clearFilters = (): void => {
     setSearch('');
     setFilterMunicipio('todos');
     setFilterAvaliacao('todos');
     setFilterSerie('todos');
+    setFilterAno('todos');
     setFilterStatus('todos');
   };
 
-  const openCreate = (): void => { setEditItem(null); setForm({ municipioId: '', avaliacaoId: '', serieId: '', link: '' }); setModalOpen(true); };
+  const openCreate = (): void => { setEditItem(null); setForm({ municipioId: '', avaliacaoId: '', serieId: '', ano: String(new Date().getFullYear()), link: '' }); setModalOpen(true); };
   const openEdit = (item: RelatorioData): void => {
     setEditItem(item);
-    setForm({ municipioId: item.municipioId, avaliacaoId: item.avaliacaoId, serieId: item.serieId, link: '' });
+    setForm({ municipioId: item.municipioId, avaliacaoId: item.avaliacaoId, serieId: item.serieId, ano: String(item.ano), link: '' });
     setModalOpen(true);
   };
 
@@ -106,6 +111,7 @@ export default function AdminRelatorios() {
         if (form.municipioId) { updateData.municipioId = form.municipioId; updateData.municipioNome = mun?.nome; }
         if (form.avaliacaoId) { updateData.avaliacaoId = form.avaliacaoId; updateData.avaliacaoNome = ava?.nome; }
         if (form.serieId) { updateData.serieId = form.serieId; updateData.serieNome = ser?.nome; }
+        if (form.ano) updateData.ano = parseInt(form.ano);
         if (linkEncriptado) updateData.linkEncriptado = linkEncriptado;
         await atualizar(editItem.id, updateData);
         // Se o município mudou e não bate mais com o filtro ativo, some da lista.
@@ -118,12 +124,14 @@ export default function AdminRelatorios() {
           municipioId: form.municipioId, municipioNome: mun?.nome,
           avaliacaoId: form.avaliacaoId, avaliacaoNome: ava?.nome,
           serieId: form.serieId, serieNome: ser?.nome,
+          ano: parseInt(form.ano),
           linkEncriptado,
         });
         const novo: RelatorioData = {
           id, municipioId: form.municipioId, municipioNome: mun?.nome || '',
           avaliacaoId: form.avaliacaoId, avaliacaoNome: ava?.nome || '',
           serieId: form.serieId, serieNome: ser?.nome || '',
+          ano: parseInt(form.ano),
           linkEncriptado: linkEncriptado || '',
           liberado: false, liberadoEm: null, liberadoPor: null,
           entregueEm: null, entreguePor: null, entreguePorNome: null, historico: [],
@@ -153,6 +161,7 @@ export default function AdminRelatorios() {
     { header: 'Município', render: (r) => <span className="font-medium">{r.municipioNome}</span> },
     { header: 'Avaliação', render: (r) => <span className="text-muted-foreground">{r.avaliacaoNome}</span> },
     { header: 'Série', render: (r) => <span className="text-muted-foreground">{r.serieNome}</span> },
+    { header: 'Ano', render: (r) => <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-semibold">{r.ano}</span> },
     { header: 'Status', render: (r) => <StatusBadge status={r.liberado ? 'liberado' : 'pendente'} /> },
     {
       header: 'Entregue em', render: (r) => r.entregueEm ? (
@@ -241,6 +250,15 @@ export default function AdminRelatorios() {
             {series.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
           </SelectContent>
         </Select>
+        <Select value={filterAno} onValueChange={setFilterAno}>
+          <SelectTrigger className="w-full sm:w-32 h-10 rounded-xl">
+            <SelectValue placeholder="Ano" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos os anos</SelectItem>
+            {anos.map(a => <SelectItem key={a} value={String(a)}>{a}</SelectItem>)}
+          </SelectContent>
+        </Select>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
           <SelectTrigger className="w-full sm:w-36 h-10 rounded-xl">
             <SelectValue placeholder="Status" />
@@ -277,6 +295,11 @@ export default function AdminRelatorios() {
               <SelectTrigger className="rounded-xl h-10"><SelectValue placeholder="Selecione..." /></SelectTrigger>
               <SelectContent>{series.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}</SelectContent>
             </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Ano</Label>
+            <Input type="number" placeholder="2026" value={form.ano} onChange={e => setForm(f => ({ ...f, ano: e.target.value }))} className="rounded-xl h-10" required />
+            <p className="text-xs text-muted-foreground">Ano de referência do relatório — ajuda a organizar quando a mesma avaliação se repete todo ano.</p>
           </div>
           <div className="space-y-1.5">
             <Label>Link do Power BI</Label>

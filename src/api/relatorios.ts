@@ -35,6 +35,8 @@ export interface RelatorioData {
   avaliacaoNome: string
   serieId: string
   serieNome: string
+  /** Ano de referência do relatório — independente do ano cadastrado na avaliação, permite reusar a mesma avaliação (ex.: "CADERNO 1") ano após ano. */
+  ano: number
   linkEncriptado: string
   liberado: boolean
   liberadoEm: Date | null
@@ -55,6 +57,7 @@ export interface RelatorioInput {
   municipioNome?: string
   avaliacaoId: string
   avaliacaoNome?: string
+  ano: number
 }
 
 export interface CriarEmLoteInput {
@@ -62,6 +65,7 @@ export interface CriarEmLoteInput {
   municipioNome?: string
   avaliacaoId: string
   avaliacaoNome?: string
+  ano: number
   itens: Array<{ serieId: string; linkEncriptado: string; serieNome?: string }>
 }
 
@@ -74,6 +78,9 @@ function fromFirestore(snapshot: DocumentSnapshot<DocumentData>): RelatorioData 
     municipioId: data.municipioId, municipioNome: data.municipioNome || '',
     avaliacaoId: data.avaliacaoId, avaliacaoNome: data.avaliacaoNome || '',
     serieId: data.serieId, serieNome: data.serieNome || '',
+    // Relatórios cadastrados antes deste campo existir não têm `ano` — usa o
+    // ano do próprio cadastro (createdAt) como valor retroativo razoável.
+    ano: data.ano || data.createdAt?.toDate()?.getFullYear() || new Date().getFullYear(),
     linkEncriptado: data.linkEncriptado || '',
     liberado: data.liberado || false,
     liberadoEm: data.liberadoEm?.toDate() || null,
@@ -142,6 +149,7 @@ export async function criarEmLote(input: CriarEmLoteInput): Promise<void> {
       municipioId: input.municipioId, municipioNome: input.municipioNome || '',
       avaliacaoId: input.avaliacaoId, avaliacaoNome: input.avaliacaoNome || '',
       serieId: item.serieId, serieNome: item.serieNome || '',
+      ano: input.ano,
       linkEncriptado: item.linkEncriptado,
       liberado: false, liberadoEm: null, liberadoPor: null,
       entregueEm: null, entreguePor: null, entreguePorNome: null, historico: [],

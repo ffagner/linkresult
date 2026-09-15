@@ -35,6 +35,7 @@ export default function PedagogicoRelatorios() {
   const [filterMunicipio, setFilterMunicipio] = useState<string>('todos');
   const [filterAvaliacao, setFilterAvaliacao] = useState<string>('todos');
   const [filterSerie, setFilterSerie] = useState<string>('todos');
+  const [filterAno, setFilterAno] = useState<string>('todos');
   const [filterStatus, setFilterStatus] = useState<string>('todos');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [ajusteItem, setAjusteItem] = useState<RelatorioData | null>(null);
@@ -64,24 +65,28 @@ export default function PedagogicoRelatorios() {
       .finally(() => setLoading(false));
   }, [filterMunicipio]);
 
+  const anos = [...new Set(data.map(r => r.ano))].sort((a, b) => b - a);
+
   const filtered = data.filter(r => {
     const matchSearch = (r.municipioNome || '').toLowerCase().includes(search.toLowerCase()) ||
       (r.avaliacaoNome || '').toLowerCase().includes(search.toLowerCase()) ||
       (r.serieNome || '').toLowerCase().includes(search.toLowerCase());
     const matchA = filterAvaliacao === 'todos' || r.avaliacaoId === filterAvaliacao;
     const matchSerie = filterSerie === 'todos' || r.serieId === filterSerie;
+    const matchAno = filterAno === 'todos' || String(r.ano) === filterAno;
     const matchS = filterStatus === 'todos' || (filterStatus === 'liberado' ? r.liberado : !r.liberado);
-    return matchSearch && matchA && matchSerie && matchS;
+    return matchSearch && matchA && matchSerie && matchAno && matchS;
   });
 
   const hasActiveFilters = search !== '' || filterMunicipio !== 'todos' ||
-    filterAvaliacao !== 'todos' || filterSerie !== 'todos' || filterStatus !== 'todos';
+    filterAvaliacao !== 'todos' || filterSerie !== 'todos' || filterAno !== 'todos' || filterStatus !== 'todos';
 
   const clearFilters = (): void => {
     setSearch('');
     setFilterMunicipio('todos');
     setFilterAvaliacao('todos');
     setFilterSerie('todos');
+    setFilterAno('todos');
     setFilterStatus('todos');
   };
 
@@ -130,6 +135,7 @@ export default function PedagogicoRelatorios() {
     { header: 'Município', render: (r) => <span className="font-medium">{r.municipioNome}</span> },
     { header: 'Avaliação', render: (r) => <span className="text-muted-foreground">{r.avaliacaoNome}</span> },
     { header: 'Série', render: (r) => <span className="text-muted-foreground">{r.serieNome}</span> },
+    { header: 'Ano', render: (r) => <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-semibold">{r.ano}</span> },
     { header: 'Status', render: (r) => <StatusBadge status={r.liberado ? 'liberado' : 'pendente'} /> },
     {
       header: 'Entregue em', render: (r) => r.entregueEm ? (
@@ -216,6 +222,13 @@ export default function PedagogicoRelatorios() {
           <SelectContent>
             <SelectItem value="todos">Todas as séries</SelectItem>
             {series.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={filterAno} onValueChange={setFilterAno}>
+          <SelectTrigger className="w-full sm:w-32 h-10 rounded-xl"><SelectValue placeholder="Ano" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos os anos</SelectItem>
+            {anos.map(a => <SelectItem key={a} value={String(a)}>{a}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={filterStatus} onValueChange={setFilterStatus}>

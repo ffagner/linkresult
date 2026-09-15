@@ -21,6 +21,7 @@ export default function MunicipioRelatorios() {
   const [loading, setLoading] = useState<boolean>(true);
   const [filterAvaliacao, setFilterAvaliacao] = useState<string>('todos');
   const [filterSerie, setFilterSerie] = useState<string>('todos');
+  const [filterAno, setFilterAno] = useState<string>('todos');
   const [search, setSearch] = useState<string>('');
 
   useEffect(() => {
@@ -47,28 +48,36 @@ export default function MunicipioRelatorios() {
     new Map(relatorios.map(r => [r.serieId, { id: r.serieId, nome: r.serieNome }])).values()
   );
 
+  // Anos derivados dos relatórios liberados, mais recente primeiro — uma
+  // mesma avaliação (ex.: "CADERNO 1") se repete ano após ano.
+  const anosDisponiveis = [...new Set(relatorios.map(r => r.ano))].sort((a, b) => b - a);
+
   const termo = search.trim().toLowerCase();
 
   const filtered = relatorios.filter(r => {
     const matchAvaliacao = filterAvaliacao === 'todos' || r.avaliacaoId === filterAvaliacao;
     const matchSerie = filterSerie === 'todos' || r.serieId === filterSerie;
+    const matchAno = filterAno === 'todos' || String(r.ano) === filterAno;
     const matchSearch = termo === '' ||
       (r.serieNome || '').toLowerCase().includes(termo) ||
       (r.avaliacaoNome || '').toLowerCase().includes(termo);
-    return matchAvaliacao && matchSerie && matchSearch;
+    return matchAvaliacao && matchSerie && matchAno && matchSearch;
   });
 
-  const hasActiveFilters = search !== '' || filterAvaliacao !== 'todos' || filterSerie !== 'todos';
+  const hasActiveFilters = search !== '' || filterAvaliacao !== 'todos' || filterSerie !== 'todos' || filterAno !== 'todos';
 
   const clearFilters = (): void => {
     setSearch('');
     setFilterAvaliacao('todos');
     setFilterSerie('todos');
+    setFilterAno('todos');
   };
 
-  const grouped = filtered.reduce<Record<string, { avaliacaoNome: string; items: RelatorioData[] }>>((acc, r) => {
-    const key = r.avaliacaoId;
-    if (!acc[key]) acc[key] = { avaliacaoNome: r.avaliacaoNome, items: [] };
+  // Agrupa por avaliação + ano — sem o ano, "CADERNO 1" de anos diferentes
+  // apareceria misturado na mesma seção.
+  const grouped = filtered.reduce<Record<string, { avaliacaoNome: string; ano: number; items: RelatorioData[] }>>((acc, r) => {
+    const key = `${r.avaliacaoId}-${r.ano}`;
+    if (!acc[key]) acc[key] = { avaliacaoNome: r.avaliacaoNome, ano: r.ano, items: [] };
     acc[key].items.push(r);
     return acc;
   }, {});
@@ -142,6 +151,15 @@ export default function MunicipioRelatorios() {
                   {seriesDisponiveis.map(s => <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>)}
                 </SelectContent>
               </Select>
+              <Select value={filterAno} onValueChange={setFilterAno}>
+                <SelectTrigger className="w-full sm:w-32 h-9 rounded-xl text-sm">
+                  <SelectValue placeholder="Todos os anos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos os anos</SelectItem>
+                  {anosDisponiveis.map(a => <SelectItem key={a} value={String(a)}>{a}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             {hasActiveFilters && (
               <div className="flex items-center justify-between gap-3">
@@ -171,12 +189,14 @@ export default function MunicipioRelatorios() {
           />
         ) : (
           <div className="space-y-6 animate-fade-in">
-            {Object.values(grouped).map(group => (
-              <div key={group.avaliacaoNome}>
+            {Object.values(grouped)
+              .sort((a, b) => b.ano - a.ano || a.avaliacaoNome.localeCompare(b.avaliacaoNome))
+              .map(group => (
+              <div key={`${group.avaliacaoNome}-${group.ano}`}>
                 <div className="flex items-center gap-2 mb-3">
                   <div className="h-px flex-1 bg-border" />
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2">
-                    {group.avaliacaoNome}
+                    {group.avaliacaoNome} · {group.ano}
                   </span>
                   <div className="h-px flex-1 bg-border" />
                 </div>
