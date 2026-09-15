@@ -11,7 +11,7 @@ export default function AcessoNegado() {
         <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-red-500 rounded-full blur-3xl" />
       </div>
       <div className="relative">
-        <Logo size="md" />
+        <Logo size="md" tone="light" />
         <div className="mt-12 mb-6">
           <div className="w-24 h-24 rounded-3xl bg-red-500/20 flex items-center justify-center mx-auto mb-6">
             <ShieldX className="w-12 h-12 text-red-400" />

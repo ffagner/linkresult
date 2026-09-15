@@ -63,7 +63,7 @@ export default function MunicipioReportViewer() {
           <Link to="/municipio" className="p-1.5 rounded-lg hover:bg-slate-700 transition-colors text-slate-400 hover:text-white">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <Logo size="sm" />
+          <Logo size="sm" tone="light" />
           {relatorio && (
             <div className="hidden sm:flex items-center gap-2 text-slate-300 text-sm">
               <span className="font-medium text-white">{relatorio.municipioNome}</span>

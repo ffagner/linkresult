@@ -30,9 +30,9 @@ export default function RecuperarSenha() {
       </div>
 
       <div className="relative w-full max-w-md">
-        <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 animate-fade-in">
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 animate-fade-in text-slate-900">
           <div className="flex justify-center mb-8">
-            <Logo size="lg" />
+            <Logo size="lg" tone="dark" />
           </div>
 
           {success ? (
@@ -40,8 +40,8 @@ export default function RecuperarSenha() {
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
                 <CheckCircle2 className="w-8 h-8 text-green-600" />
               </div>
-              <h2 className="text-xl font-display font-bold mb-2">E-mail enviado!</h2>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+              <h2 className="text-xl font-display font-bold mb-2 text-slate-900">E-mail enviado!</h2>
+              <p className="text-slate-500 text-sm leading-relaxed mb-6">
                 Enviamos as instruções para <strong>{email}</strong>. Verifique sua caixa de entrada e a pasta de spam.
               </p>
               <Link to="/login">
@@ -54,14 +54,14 @@ export default function RecuperarSenha() {
           ) : (
             <>
               <div className="mb-6">
-                <h1 className="text-2xl font-display font-bold">Recuperar senha</h1>
-                <p className="text-muted-foreground text-sm mt-1">
+                <h1 className="text-2xl font-display font-bold text-slate-900">Recuperar senha</h1>
+                <p className="text-slate-500 text-sm mt-1">
                   Digite seu e-mail e enviaremos um link para redefinir sua senha.
                 </p>
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-destructive/10 text-destructive text-sm mb-5">
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-red-50 text-red-600 text-sm mb-5">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   {error}
                 </div>
@@ -69,14 +69,14 @@ export default function RecuperarSenha() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="email">E-mail cadastrado</Label>
+                  <Label htmlFor="email" className="text-slate-700">E-mail cadastrado</Label>
                   <Input
                     id="email"
                     type="email"
                     placeholder="seu@email.com.br"
                     value={email}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                    className="h-11 rounded-xl"
+                    className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-500/30"
                     disabled={loading}
                   />
                 </div>
@@ -95,7 +95,7 @@ export default function RecuperarSenha() {
                   )}
                 </Button>
 
-                <Link to="/login" className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-1">
+                <Link to="/login" className="flex items-center justify-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors py-1">
                   <ArrowLeft className="w-4 h-4" />
                   Voltar ao login
                 </Link>

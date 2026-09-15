@@ -77,7 +77,7 @@ export default function AppLayout({ role = 'admin', userName = 'Usuário', child
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <div className="px-4 py-5 border-b border-sidebar-border">
-        <Logo size="sm" />
+        <Logo size="sm" tone="light" />
       </div>
       <div className="px-3 py-2 mt-1">
         <p className="text-xs font-semibold uppercase tracking-widest text-sidebar-foreground/40 px-2 mb-2">

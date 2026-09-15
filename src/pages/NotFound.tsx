@@ -11,7 +11,7 @@ export default function NotFound() {
         <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-blue-500 rounded-full blur-3xl" />
       </div>
       <div className="relative">
-        <Logo size="md" />
+        <Logo size="md" tone="light" />
         <div className="mt-12 mb-6">
           <div className="text-[8rem] font-display font-black text-white/10 leading-none select-none">404</div>
           <h1 className="text-2xl font-display font-bold text-white -mt-6 mb-3">Página não encontrada</h1>

@@ -59,18 +59,18 @@ export default function Login() {
       </div>
 
       <div className="relative w-full max-w-md">
-        <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 animate-fade-in">
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 animate-fade-in text-slate-900">
           <div className="flex justify-center mb-8">
-            <Logo size="lg" />
+            <Logo size="lg" tone="dark" />
           </div>
 
           <div className="mb-6">
-            <h1 className="text-2xl font-display font-bold text-foreground">Bem-vindo de volta</h1>
-            <p className="text-muted-foreground text-sm mt-1">Acesse sua conta para continuar</p>
+            <h1 className="text-2xl font-display font-bold text-slate-900">Bem-vindo de volta</h1>
+            <p className="text-slate-500 text-sm mt-1">Acesse sua conta para continuar</p>
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-destructive/10 text-destructive text-sm mb-5">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-red-50 text-red-600 text-sm mb-5">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               {error}
             </div>
@@ -78,20 +78,20 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="email">E-mail</Label>
+              <Label htmlFor="email" className="text-slate-700">E-mail</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="seu@email.com.br"
                 value={email}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                className="h-11 rounded-xl"
+                className="h-11 rounded-xl border-slate-200 focus-visible:ring-blue-500/30"
                 disabled={loading}
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="senha">Senha</Label>
+              <Label htmlFor="senha" className="text-slate-700">Senha</Label>
               <div className="relative">
                 <Input
                   id="senha"
@@ -99,13 +99,13 @@ export default function Login() {
                   placeholder="••••••••"
                   value={senha}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSenha(e.target.value)}
-                  className="h-11 rounded-xl pr-11"
+                  className="h-11 rounded-xl pr-11 border-slate-200 focus-visible:ring-blue-500/30"
                   disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowSenha(!showSenha)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                 >
                   {showSenha ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -113,7 +113,7 @@ export default function Login() {
             </div>
 
             <div className="flex justify-end">
-              <Link to="/recuperar-senha" className="text-sm text-primary hover:text-primary/80 transition-colors">
+              <Link to="/recuperar-senha" className="text-sm text-blue-600 hover:text-blue-700 transition-colors">
                 Esqueci minha senha
               </Link>
             </div>
