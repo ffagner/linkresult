@@ -8,12 +8,12 @@ export interface MunicipioData {
   id: string
   nome: string
   estado: string
-  createdAt: string
+  createdAt: Date | null
 }
 
 function fromFirestore(snapshot: DocumentSnapshot<DocumentData>): MunicipioData {
   const data = snapshot.data()!
-  return { id: snapshot.id, nome: data.nome, estado: data.estado, createdAt: data.createdAt?.toDate()?.toISOString().split('T')[0] || '' }
+  return { id: snapshot.id, nome: data.nome, estado: data.estado, createdAt: data.createdAt?.toDate() || null }
 }
 
 export async function listar(): Promise<MunicipioData[]> {

@@ -8,12 +8,12 @@ export interface AvaliacaoData {
   id: string
   nome: string
   ano: number
-  createdAt: string
+  createdAt: Date | null
 }
 
 function fromFirestore(snapshot: DocumentSnapshot<DocumentData>): AvaliacaoData {
   const data = snapshot.data()!
-  return { id: snapshot.id, nome: data.nome, ano: data.ano, createdAt: data.createdAt?.toDate()?.toISOString().split('T')[0] || '' }
+  return { id: snapshot.id, nome: data.nome, ano: data.ano, createdAt: data.createdAt?.toDate() || null }
 }
 
 export async function listar(): Promise<AvaliacaoData[]> {

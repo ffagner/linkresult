@@ -49,7 +49,13 @@ service cloud.firestore {
       allow read: if isPedagogico();
       allow update: if isPedagogico()
         && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['liberado', 'liberadoEm', 'liberadoPor', 'updatedAt']);
+            .hasOnly([
+              'liberado', 'liberadoEm', 'liberadoPor', 'updatedAt',
+              'entregueEm', 'entreguePor', 'entreguePorNome', 'historico'
+            ])
+        // Sem Cloud Functions (plano Spark) não dá pra garantir imutabilidade
+        // das entradas antigas — só que o histórico nunca encolhe.
+        && request.resource.data.historico.size() >= resource.data.get('historico', []).size();
 
       allow read: if isMunicipio()
         && resource.data.municipioId == getMunicipioId()

@@ -4,6 +4,7 @@ import { Building2, ClipboardList, FileText, CheckCircle2, Plus, ArrowRight, Clo
 import { listar as listarMunicipios } from '@/api/municipios';
 import { listar as listarAvaliacoes } from '@/api/avaliacoes';
 import { listar as listarRelatorios } from '@/api/relatorios';
+import type { RelatorioData } from '@/api/relatorios';
 import { useAuth } from '@/lib/AuthContext';
 import AppLayout from '@/components/lr/AppLayout';
 import StatsCard from '@/components/lr/StatsCard';
@@ -11,6 +12,16 @@ import PageHeader from '@/components/lr/PageHeader';
 import StatusBadge from '@/components/lr/StatusBadge';
 import { Button } from '@/components/ui/button';
 import LoadingSpinner from '@/components/lr/LoadingSpinner';
+import { formatarData } from '@/lib/date';
+
+interface ResumoMunicipio {
+  id: string
+  nome: string
+  total: number
+  liberados: number
+  pct: number
+  ultimaEntrega: Date | null
+}
 
 const quickActions = [
   { label: 'Novo Município', href: '/admin/municipios', icon: Building2, color: 'bg-blue-50 text-blue-600 hover:bg-blue-100' },
@@ -21,9 +32,9 @@ const quickActions = [
 
 export default function AdminDashboard() {
   const { profile } = useAuth();
-  const [stats, setStats] = useState<any>({ municipios: 0, avaliacoes: 0, liberados: 0, pendentes: 0 });
-  const [recentes, setRecentes] = useState<any[]>([]);
-  const [porMunicipio, setPorMunicipio] = useState<any[]>([]);
+  const [stats, setStats] = useState({ municipios: 0, avaliacoes: 0, liberados: 0, pendentes: 0 });
+  const [recentes, setRecentes] = useState<RelatorioData[]>([]);
+  const [porMunicipio, setPorMunicipio] = useState<ResumoMunicipio[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -37,16 +48,21 @@ export default function AdminDashboard() {
 
       // Status de liberação por município — só entram os que têm relatórios
       // cadastrados; ordenados com maior pendência primeiro para chamar atenção.
-      const resumo = m
+      const resumo: ResumoMunicipio[] = m
         .map(municipio => {
           const doMunicipio = r.filter(x => x.municipioId === municipio.id);
           const liberadosCount = doMunicipio.filter(x => x.liberado).length;
+          const datasEntrega = doMunicipio.map(x => x.entregueEm).filter((d): d is Date => d !== null);
+          const ultimaEntrega = datasEntrega.length > 0
+            ? new Date(Math.max(...datasEntrega.map(d => d.getTime())))
+            : null;
           return {
             id: municipio.id,
             nome: municipio.nome,
             total: doMunicipio.length,
             liberados: liberadosCount,
             pct: doMunicipio.length > 0 ? Math.round((liberadosCount / doMunicipio.length) * 100) : 0,
+            ultimaEntrega,
           };
         })
         .filter(x => x.total > 0)
@@ -99,12 +115,15 @@ export default function AdminDashboard() {
                     <span className="text-sm font-medium truncate">{m.nome}</span>
                     <span className="text-xs text-muted-foreground flex-shrink-0">{m.liberados}/{m.total} liberados</span>
                   </div>
-                  <div className="w-full bg-muted rounded-full h-1.5">
+                  <div className="w-full bg-muted rounded-full h-1.5 mb-1.5">
                     <div
                       className={`h-1.5 rounded-full transition-all ${m.pct === 100 ? 'bg-green-500' : m.pct === 0 ? 'bg-amber-400' : 'bg-primary'}`}
                       style={{ width: `${m.pct}%` }}
                     />
                   </div>
+                  {m.ultimaEntrega && (
+                    <span className="text-xs text-muted-foreground">Última entrega: {formatarData(m.ultimaEntrega)}</span>
+                  )}
                 </div>
               </div>
             ))}

@@ -2,10 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Search, Pencil, Trash2, Eye, Filter, FileText, Layers } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { listar, criar, atualizar, excluir } from '@/api/relatorios';
+import type { RelatorioData } from '@/api/relatorios';
 import { listar as listarMunicipios } from '@/api/municipios';
+import type { MunicipioData } from '@/api/municipios';
 import { listar as listarAvaliacoes } from '@/api/avaliacoes';
+import type { AvaliacaoData } from '@/api/avaliacoes';
 import { listar as listarSeries } from '@/api/series';
+import type { SerieData } from '@/api/series';
 import { encryptLink } from '@/lib/crypto';
+import { formatarData } from '@/lib/date';
 import AppLayout from '@/components/lr/AppLayout';
 import PageHeader from '@/components/lr/PageHeader';
 import DataTable from '@/components/lr/DataTable';
@@ -23,19 +28,19 @@ import { useToast } from '@/hooks/use-toast';
 export default function AdminRelatorios() {
   const { profile } = useAuth();
   const { toast } = useToast();
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<RelatorioData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [municipios, setMunicipios] = useState<any[]>([]);
-  const [avaliacoes, setAvaliacoes] = useState<any[]>([]);
-  const [series, setSeries] = useState<any[]>([]);
+  const [municipios, setMunicipios] = useState<MunicipioData[]>([]);
+  const [avaliacoes, setAvaliacoes] = useState<AvaliacaoData[]>([]);
+  const [series, setSeries] = useState<SerieData[]>([]);
   const [search, setSearch] = useState<string>('');
   const [filterMunicipio, setFilterMunicipio] = useState<string>('todos');
   const [filterAvaliacao, setFilterAvaliacao] = useState<string>('todos');
   const [filterSerie, setFilterSerie] = useState<string>('todos');
   const [filterStatus, setFilterStatus] = useState<string>('todos');
   const [modalOpen, setModalOpen] = useState<boolean>(false);
-  const [editItem, setEditItem] = useState<any>(null);
-  const [deleteItem, setDeleteItem] = useState<any>(null);
+  const [editItem, setEditItem] = useState<RelatorioData | null>(null);
+  const [deleteItem, setDeleteItem] = useState<RelatorioData | null>(null);
   const [form, setForm] = useState<any>({ municipioId: '', avaliacaoId: '', serieId: '', link: '' });
   const [saving, setSaving] = useState<boolean>(false);
 
@@ -77,7 +82,7 @@ export default function AdminRelatorios() {
   };
 
   const openCreate = (): void => { setEditItem(null); setForm({ municipioId: '', avaliacaoId: '', serieId: '', link: '' }); setModalOpen(true); };
-  const openEdit = (item: any): void => {
+  const openEdit = (item: RelatorioData): void => {
     setEditItem(item);
     setForm({ municipioId: item.municipioId, avaliacaoId: item.avaliacaoId, serieId: item.serieId, link: '' });
     setModalOpen(true);
@@ -92,7 +97,7 @@ export default function AdminRelatorios() {
       const ava = avaliacoes.find(a => a.id === form.avaliacaoId);
       const ser = series.find(s => s.id === form.serieId);
       if (editItem) {
-        const updateData: any = {};
+        const updateData: Partial<RelatorioData> = {};
         if (form.municipioId) { updateData.municipioId = form.municipioId; updateData.municipioNome = mun?.nome; }
         if (form.avaliacaoId) { updateData.avaliacaoId = form.avaliacaoId; updateData.avaliacaoNome = ava?.nome; }
         if (form.serieId) { updateData.serieId = form.serieId; updateData.serieNome = ser?.nome; }
@@ -108,10 +113,13 @@ export default function AdminRelatorios() {
           linkEncriptado,
         });
         setData(prev => [{
-          id, municipioId: form.municipioId, municipioNome: mun?.nome,
-          avaliacaoId: form.avaliacaoId, avaliacaoNome: ava?.nome,
-          serieId: form.serieId, serieNome: ser?.nome,
-          liberado: false, liberadoEm: null, createdAt: new Date().toISOString().split('T')[0],
+          id, municipioId: form.municipioId, municipioNome: mun?.nome || '',
+          avaliacaoId: form.avaliacaoId, avaliacaoNome: ava?.nome || '',
+          serieId: form.serieId, serieNome: ser?.nome || '',
+          linkEncriptado: linkEncriptado || '',
+          liberado: false, liberadoEm: null, liberadoPor: null,
+          entregueEm: null, entreguePor: null, entreguePorNome: null, historico: [],
+          createdAt: new Date(),
         }, ...prev]);
         toast({ title: 'Relatório criado', variant: 'create' });
       }
@@ -134,6 +142,14 @@ export default function AdminRelatorios() {
     { header: 'Avaliação', render: (r) => <span className="text-muted-foreground">{r.avaliacaoNome}</span> },
     { header: 'Série', render: (r) => <span className="text-muted-foreground">{r.serieNome}</span> },
     { header: 'Status', render: (r) => <StatusBadge status={r.liberado ? 'liberado' : 'pendente'} /> },
+    {
+      header: 'Entregue em', render: (r) => r.entregueEm ? (
+        <div>
+          <div className="text-sm">{formatarData(r.entregueEm)}</div>
+          {r.entreguePorNome && <div className="text-xs text-muted-foreground">{r.entreguePorNome}</div>}
+        </div>
+      ) : <span className="text-muted-foreground text-sm">—</span>
+    },
     {
       header: 'Ações', className: 'text-right', isActions: true,
       render: (r) => (

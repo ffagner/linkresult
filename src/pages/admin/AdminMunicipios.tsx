@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/lib/AuthContext';
 import { estadosBrasileiros } from '@/lib/mockData';
+import { formatarData } from '@/lib/date';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AdminMunicipios() {
@@ -47,7 +48,7 @@ export default function AdminMunicipios() {
         toast({ title: 'Município atualizado', variant: 'edit' });
       } else {
         const id = await criar(form);
-        setData(prev => [...prev, { id, ...form, createdAt: new Date().toISOString().split('T')[0] }]);
+        setData(prev => [...prev, { id, ...form, createdAt: new Date() }]);
         toast({ title: 'Município criado', variant: 'create' });
       }
       setModalOpen(false);
@@ -67,7 +68,7 @@ export default function AdminMunicipios() {
   const columns = [
     { header: 'Nome', key: 'nome', render: (row) => <span className="font-medium">{row.nome}</span> },
     { header: 'Estado', key: 'estado', render: (row) => <span className="text-muted-foreground">{row.estado}</span> },
-    { header: 'Cadastrado em', key: 'createdAt', render: (row) => <span className="text-muted-foreground">{row.createdAt}</span> },
+    { header: 'Cadastrado em', key: 'createdAt', render: (row) => <span className="text-muted-foreground">{formatarData(row.createdAt)}</span> },
     {
       header: 'Ações', key: 'acoes', className: 'text-right', isActions: true,
       render: (row) => (

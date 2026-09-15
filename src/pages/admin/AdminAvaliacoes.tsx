@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/lib/AuthContext';
+import { formatarData } from '@/lib/date';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AdminAvaliacoes() {
@@ -57,7 +58,7 @@ export default function AdminAvaliacoes() {
         toast({ title: 'Avaliação atualizada', variant: 'edit' });
       } else {
         const id = await criar({ nome: form.nome, ano: parseInt(form.ano) });
-        setData(prev => [...prev, { id, nome: form.nome, ano: parseInt(form.ano), createdAt: new Date().toISOString().split('T')[0] }]);
+        setData(prev => [...prev, { id, nome: form.nome, ano: parseInt(form.ano), createdAt: new Date() }]);
         toast({ title: 'Avaliação criada', variant: 'create' });
       }
       setModalOpen(false);
@@ -79,7 +80,7 @@ export default function AdminAvaliacoes() {
     { header: 'Ano', key: 'ano', render: (row) => (
       <span className="px-2.5 py-1 bg-primary/10 text-primary rounded-full text-xs font-semibold">{row.ano}</span>
     )},
-    { header: 'Cadastrado em', key: 'createdAt', render: (row) => <span className="text-muted-foreground">{row.createdAt}</span> },
+    { header: 'Cadastrado em', key: 'createdAt', render: (row) => <span className="text-muted-foreground">{formatarData(row.createdAt)}</span> },
     {
       header: 'Ações', className: 'text-right', isActions: true,
       render: (row) => (

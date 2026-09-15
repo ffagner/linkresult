@@ -13,7 +13,7 @@ export interface UsuarioData {
   municipioId: string | null
   municipioNome: string | null
   status: string
-  createdAt: string
+  createdAt: Date | null
 }
 
 function fromFirestore(snapshot: DocumentSnapshot<DocumentData>): UsuarioData {
@@ -22,7 +22,7 @@ function fromFirestore(snapshot: DocumentSnapshot<DocumentData>): UsuarioData {
     uid: snapshot.id, nome: data.nome, email: data.email,
     role: data.role, municipioId: data.municipioId || null,
     municipioNome: data.municipioNome || null, status: data.status || 'ativo',
-    createdAt: data.createdAt?.toDate()?.toISOString().split('T')[0] || '',
+    createdAt: data.createdAt?.toDate() || null,
   }
 }
 

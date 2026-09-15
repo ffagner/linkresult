@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { listarPorMunicipio as listarRelatoriosPorMunicipio } from '@/api/relatorios';
 import type { RelatorioData } from '@/api/relatorios';
+import { formatarData } from '@/lib/date';
 import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -194,8 +195,11 @@ export default function MunicipioRelatorios() {
                         </div>
                       </div>
                       <h3 className="font-semibold text-sm mb-0.5">{r.serieNome}</h3>
-                      <p className="text-xs text-muted-foreground mb-4">{r.avaliacaoNome}</p>
-                      <div className="flex items-center gap-2 text-primary text-xs font-medium group-hover:gap-3 transition-all">
+                      <p className="text-xs text-muted-foreground mb-1">{r.avaliacaoNome}</p>
+                      {r.entregueEm && (
+                        <p className="text-xs text-muted-foreground/70 mb-3">Disponível desde {formatarData(r.entregueEm)}</p>
+                      )}
+                      <div className="flex items-center gap-2 text-primary text-xs font-medium group-hover:gap-3 transition-all mt-3">
                         <Play className="w-3.5 h-3.5" />
                         Ver relatório
                       </div>

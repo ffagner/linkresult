@@ -43,11 +43,13 @@ export default function PedagogicoReportViewer() {
   }, [id]);
 
   const handleToggle = async (): Promise<void> => {
+    if (!relatorio) return;
     setToggling(true);
     try {
       const novoValor = !relatorio.liberado;
-      await liberar(id, profile.uid, novoValor);
-      setRelatorio(prev => ({ ...prev, liberado: novoValor }));
+      await liberar(relatorio.id, profile.uid, profile.nome, novoValor);
+      const atualizado = await buscarRelatorio(relatorio.id);
+      if (atualizado) setRelatorio(atualizado);
       toast({ title: novoValor ? 'Relatório liberado' : 'Acesso revogado' });
     } catch (err) {
       toast({ title: 'Erro', description: err.message, variant: 'destructive' });
