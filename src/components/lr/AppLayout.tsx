@@ -6,6 +6,7 @@ import {
   LogOut, User, Menu, X, ChevronRight, BarChart3, CheckSquare, type LucideIcon
 } from 'lucide-react';
 import Logo from './Logo';
+import ThemeToggle from './ThemeToggle';
 
 interface NavItem {
   label: string
@@ -130,7 +131,8 @@ export default function AppLayout({ role = 'admin', userName = 'Usuário', child
           >
             <Menu className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-3 ml-auto">
+          <div className="flex items-center gap-2 ml-auto">
+            <ThemeToggle />
             <Link to="/perfil" className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-muted transition-colors">
               <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
                 <User className="w-4 h-4 text-primary" />

@@ -11,11 +11,11 @@ interface StatsCardProps {
 
 export default function StatsCard({ label, value, icon: Icon, color = 'blue', trend }: StatsCardProps) {
   const colors = {
-    blue: { bg: 'bg-blue-50', icon: 'text-blue-600', border: 'border-blue-100' },
-    green: { bg: 'bg-green-50', icon: 'text-green-600', border: 'border-green-100' },
-    amber: { bg: 'bg-amber-50', icon: 'text-amber-600', border: 'border-amber-100' },
-    purple: { bg: 'bg-purple-50', icon: 'text-purple-600', border: 'border-purple-100' },
-    cyan: { bg: 'bg-cyan-50', icon: 'text-cyan-600', border: 'border-cyan-100' },
+    blue: { bg: 'bg-blue-50 dark:bg-blue-500/10', icon: 'text-blue-600 dark:text-blue-400', border: 'border-blue-100' },
+    green: { bg: 'bg-green-50 dark:bg-green-500/10', icon: 'text-green-600 dark:text-green-400', border: 'border-green-100' },
+    amber: { bg: 'bg-amber-50 dark:bg-amber-500/10', icon: 'text-amber-600 dark:text-amber-400', border: 'border-amber-100' },
+    purple: { bg: 'bg-purple-50 dark:bg-purple-500/10', icon: 'text-purple-600 dark:text-purple-400', border: 'border-purple-100' },
+    cyan: { bg: 'bg-cyan-50 dark:bg-cyan-500/10', icon: 'text-cyan-600 dark:text-cyan-400', border: 'border-cyan-100' },
   };
   const c = colors[color] || colors.blue;
 

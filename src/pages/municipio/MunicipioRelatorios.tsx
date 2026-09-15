@@ -4,6 +4,7 @@ import { BarChart3, Play, LogOut, User, FileText, Search, X } from 'lucide-react
 import Logo from '@/components/lr/Logo';
 import EmptyState from '@/components/lr/EmptyState';
 import LoadingSpinner from '@/components/lr/LoadingSpinner';
+import ThemeToggle from '@/components/lr/ThemeToggle';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { listarPorMunicipio as listarRelatoriosPorMunicipio } from '@/api/relatorios';
@@ -84,6 +85,7 @@ export default function MunicipioRelatorios() {
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
           <Logo size="sm" />
           <div className="flex items-center gap-3">
+            <ThemeToggle className="p-1.5" />
             <Link to="/perfil?role=municipio" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
               <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
                 <User className="w-3.5 h-3.5 text-primary" />
