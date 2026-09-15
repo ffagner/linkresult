@@ -1,4 +1,4 @@
-import type { DocumentData, DocumentSnapshot } from 'firebase/firestore'
+import type { DocumentData, DocumentSnapshot, QueryConstraint } from 'firebase/firestore'
 import {
   collection, addDoc, updateDoc, deleteDoc, doc, getDocs, getDoc, query, where, orderBy,
   serverTimestamp, writeBatch, arrayUnion, Timestamp,
@@ -95,9 +95,17 @@ function fromFirestore(snapshot: DocumentSnapshot<DocumentData>): RelatorioData 
   }
 }
 
-export async function listar(): Promise<RelatorioData[]> {
-  const q = query(collection(db, COLLECTION), orderBy('createdAt', 'desc'))
-  const snapshot = await getDocs(q)
+/**
+ * Lista relatórios, opcionalmente restrito a um município (filtro server-side).
+ * Sem `municipioId`, ainda busca a coleção inteira — aceitável no volume atual
+ * (dezenas/centenas de docs); ver docs/PLANO-MELHORIAS.md item 5 para quando
+ * cursor-pagination se tornar necessária.
+ */
+export async function listar(municipioId?: string): Promise<RelatorioData[]> {
+  const clauses: QueryConstraint[] = []
+  if (municipioId) clauses.push(where('municipioId', '==', municipioId))
+  clauses.push(orderBy('createdAt', 'desc'))
+  const snapshot = await getDocs(query(collection(db, COLLECTION), ...clauses))
   return snapshot.docs.map(fromFirestore)
 }
 

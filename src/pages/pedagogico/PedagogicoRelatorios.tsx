@@ -41,37 +41,37 @@ export default function PedagogicoRelatorios() {
   const [novaDataInput, setNovaDataInput] = useState<string>('');
   const [ajustando, setAjustando] = useState<boolean>(false);
 
+  // Listas para os selects de filtro — carregadas uma vez.
   useEffect(() => {
-    async function load() {
-      try {
-        const [relatoriosData, municipiosData, avaliacoesData, seriesData] = await Promise.all([
-          listar(),
-          listarMunicipios(),
-          listarAvaliacoes(),
-          listarSeries(),
-        ]);
-        setData(relatoriosData);
+    Promise.all([listarMunicipios(), listarAvaliacoes(), listarSeries()])
+      .then(([municipiosData, avaliacoesData, seriesData]) => {
         setMunicipios(municipiosData);
         setAvaliacoes(avaliacoesData);
         setSeries(seriesData);
-      } catch (err) {
-        toast({ title: 'Erro ao carregar', description: err.message, variant: 'destructive' });
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
+      })
+      .catch((err: Error) => toast({ title: 'Erro ao carregar', description: err.message, variant: 'destructive' }));
   }, []);
+
+  // Relatórios: refeito no Firestore sempre que o filtro de município muda
+  // (where server-side) em vez de sempre trazer a coleção inteira — ver
+  // docs/PLANO-MELHORIAS.md item 5. Avaliação/série/status/busca continuam
+  // aplicados no cliente sobre esse conjunto.
+  useEffect(() => {
+    setLoading(true);
+    listar(filterMunicipio !== 'todos' ? filterMunicipio : undefined)
+      .then(relatoriosData => setData(relatoriosData))
+      .catch((err: Error) => toast({ title: 'Erro ao carregar', description: err.message, variant: 'destructive' }))
+      .finally(() => setLoading(false));
+  }, [filterMunicipio]);
 
   const filtered = data.filter(r => {
     const matchSearch = (r.municipioNome || '').toLowerCase().includes(search.toLowerCase()) ||
       (r.avaliacaoNome || '').toLowerCase().includes(search.toLowerCase()) ||
       (r.serieNome || '').toLowerCase().includes(search.toLowerCase());
-    const matchM = filterMunicipio === 'todos' || r.municipioId === filterMunicipio;
     const matchA = filterAvaliacao === 'todos' || r.avaliacaoId === filterAvaliacao;
     const matchSerie = filterSerie === 'todos' || r.serieId === filterSerie;
     const matchS = filterStatus === 'todos' || (filterStatus === 'liberado' ? r.liberado : !r.liberado);
-    return matchSearch && matchM && matchA && matchSerie && matchS;
+    return matchSearch && matchA && matchSerie && matchS;
   });
 
   const hasActiveFilters = search !== '' || filterMunicipio !== 'todos' ||

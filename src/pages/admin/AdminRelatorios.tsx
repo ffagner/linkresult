@@ -44,30 +44,35 @@ export default function AdminRelatorios() {
   const [form, setForm] = useState<{ municipioId: string; avaliacaoId: string; serieId: string; link: string }>({ municipioId: '', avaliacaoId: '', serieId: '', link: '' });
   const [saving, setSaving] = useState<boolean>(false);
 
+  // Listas para os selects de filtro/formulário — carregadas uma vez.
   useEffect(() => {
-    Promise.all([
-      listar(),
-      listarMunicipios(),
-      listarAvaliacoes(),
-      listarSeries(),
-    ]).then(([rel, muns, avas, sers]) => {
-      setData(rel);
+    Promise.all([listarMunicipios(), listarAvaliacoes(), listarSeries()]).then(([muns, avas, sers]) => {
       setMunicipios(muns);
       setAvaliacoes(avas);
       setSeries(sers);
-      setLoading(false);
     });
   }, []);
+
+  // Relatórios: refeito no Firestore sempre que o filtro de município muda
+  // (where server-side) em vez de sempre trazer a coleção inteira — ver
+  // docs/PLANO-MELHORIAS.md item 5. Avaliação/série/status/busca continuam
+  // aplicados no cliente sobre esse conjunto.
+  useEffect(() => {
+    setLoading(true);
+    listar(filterMunicipio !== 'todos' ? filterMunicipio : undefined).then(rel => {
+      setData(rel);
+      setLoading(false);
+    });
+  }, [filterMunicipio]);
 
   const filtered = data.filter(r => {
     const matchSearch = (r.municipioNome || '').toLowerCase().includes(search.toLowerCase()) ||
       (r.avaliacaoNome || '').toLowerCase().includes(search.toLowerCase()) ||
       (r.serieNome || '').toLowerCase().includes(search.toLowerCase());
-    const matchM = filterMunicipio === 'todos' || r.municipioId === filterMunicipio;
     const matchA = filterAvaliacao === 'todos' || r.avaliacaoId === filterAvaliacao;
     const matchSerie = filterSerie === 'todos' || r.serieId === filterSerie;
     const matchS = filterStatus === 'todos' || (filterStatus === 'liberado' ? r.liberado : !r.liberado);
-    return matchSearch && matchM && matchA && matchSerie && matchS;
+    return matchSearch && matchA && matchSerie && matchS;
   });
 
   const hasActiveFilters = search !== '' || filterMunicipio !== 'todos' ||
@@ -103,7 +108,10 @@ export default function AdminRelatorios() {
         if (form.serieId) { updateData.serieId = form.serieId; updateData.serieNome = ser?.nome; }
         if (linkEncriptado) updateData.linkEncriptado = linkEncriptado;
         await atualizar(editItem.id, updateData);
-        setData(prev => prev.map(r => r.id === editItem.id ? { ...r, ...updateData } : r));
+        // Se o município mudou e não bate mais com o filtro ativo, some da lista.
+        setData(prev => prev
+          .map(r => r.id === editItem.id ? { ...r, ...updateData } : r)
+          .filter(r => filterMunicipio === 'todos' || r.municipioId === filterMunicipio));
         toast({ title: 'Relatório atualizado', variant: 'edit' });
       } else {
         const id = await criar({
@@ -112,7 +120,7 @@ export default function AdminRelatorios() {
           serieId: form.serieId, serieNome: ser?.nome,
           linkEncriptado,
         });
-        setData(prev => [{
+        const novo: RelatorioData = {
           id, municipioId: form.municipioId, municipioNome: mun?.nome || '',
           avaliacaoId: form.avaliacaoId, avaliacaoNome: ava?.nome || '',
           serieId: form.serieId, serieNome: ser?.nome || '',
@@ -120,7 +128,11 @@ export default function AdminRelatorios() {
           liberado: false, liberadoEm: null, liberadoPor: null,
           entregueEm: null, entreguePor: null, entreguePorNome: null, historico: [],
           createdAt: new Date(),
-        }, ...prev]);
+        };
+        // Só aparece na lista já filtrada se pertencer ao município selecionado.
+        if (filterMunicipio === 'todos' || filterMunicipio === form.municipioId) {
+          setData(prev => [novo, ...prev]);
+        }
         toast({ title: 'Relatório criado', variant: 'create' });
       }
       setModalOpen(false);

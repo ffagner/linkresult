@@ -7,6 +7,14 @@
         { "fieldPath": "municipioId", "order": "ASCENDING" },
         { "fieldPath": "liberado", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "relatorios",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "municipioId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

@@ -299,6 +299,21 @@ de `components/ui/` (shadcn, marcado com `@ts-nocheck`).
 
 ## 5. Paginação / escala
 
+### Status (2026-09-15)
+**Camada 1 implementada; camada 2 deliberadamente adiada.** Ao implementar,
+ficou claro que cursor-pagination ("Carregar mais") regrediria a busca
+textual instantânea sobre todo o dataset que hoje funciona no Admin e no
+Pedagógico — regressão real de UX para resolver um problema de custo que só
+aparece em 2–3 anos, com o volume atual (dezenas/centenas de docs, não
+milhares). Decisão: implementar só o filtro server-side por município
+(`listar(municipioId?)` em `src/api/relatorios.ts`, índice composto
+`municipioId + createdAt` em `firestore.indexes.json`), que reduz custo no
+fluxo mais comum (equipe abrindo os relatórios de 1 município) sem tirar
+nada de quem usa "todos". Avaliação continua client-side (par de índices
+adicionais não valia a pena para um segundo filtro menos usado). Cursor
+pagination fica para quando um único `listar()` sem filtro passar de ~1.000
+documentos — nesse ponto vale reabrir este item.
+
 ### Problema
 `listar()` busca **todos** os relatórios a cada carregamento de página. O
 `CLAUDE.md` projeta ~1.620 relatórios/ano. O plano Spark tem cota de 50 mil
