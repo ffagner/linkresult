@@ -3,9 +3,20 @@ import { onAuthStateChanged, signOut, type User } from 'firebase/auth'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { auth, db } from '@/lib/firebase'
 
+export interface UserProfile {
+  uid: string
+  nome: string
+  email: string
+  role: string
+  municipioId: string | null
+  municipioNome: string | null
+  status: string
+  createdAt: Date | null
+}
+
 interface AuthContextValue {
   user: User | null
-  profile: Record<string, any> | null
+  profile: UserProfile | null
   loading: boolean
   /** 'inativo' quando o próprio backend derrubou a sessão por status inativo. */
   authError: 'inativo' | null
@@ -16,7 +27,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [profile, setProfile] = useState<Record<string, any> | null>(null)
+  const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [authError, setAuthError] = useState<'inativo' | null>(null)
   // signOut(auth) reentra em onAuthStateChanged com firebaseUser=null antes do
@@ -58,7 +69,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return
         }
 
-        setProfile(data ? { uid: snapshot.id, ...data } : null)
+        setProfile(data ? {
+          uid: snapshot.id,
+          nome: data.nome,
+          email: data.email,
+          role: data.role,
+          municipioId: data.municipioId || null,
+          municipioNome: data.municipioNome || null,
+          status: data.status || 'ativo',
+          createdAt: data.createdAt?.toDate() || null,
+        } : null)
         setLoading(false)
       })
     })

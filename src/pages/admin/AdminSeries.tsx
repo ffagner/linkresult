@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, GripVertical, BookOpen } from 'lucide-react';
 import { listar, criar, atualizar, excluir } from '@/api/series';
+import type { SerieData } from '@/api/series';
 import AppLayout from '@/components/lr/AppLayout';
 import PageHeader from '@/components/lr/PageHeader';
 import FormModal from '@/components/lr/FormModal';
@@ -16,18 +17,18 @@ import { useToast } from '@/hooks/use-toast';
 export default function AdminSeries() {
   const { profile } = useAuth();
   const { toast } = useToast();
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<SerieData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
-  const [editItem, setEditItem] = useState<any>(null);
-  const [deleteItem, setDeleteItem] = useState<any>(null);
-  const [form, setForm] = useState<any>({ nome: '', ordem: '' });
+  const [editItem, setEditItem] = useState<SerieData | null>(null);
+  const [deleteItem, setDeleteItem] = useState<SerieData | null>(null);
+  const [form, setForm] = useState<{ nome: string; ordem: string }>({ nome: '', ordem: '' });
   const [saving, setSaving] = useState<boolean>(false);
 
   useEffect(() => { listar().then(r => { setData(r); setLoading(false) }) }, []);
 
   const openCreate = (): void => { setEditItem(null); setForm({ nome: '', ordem: String(data.length + 1) }); setModalOpen(true); };
-  const openEdit = (item: any): void => { setEditItem(item); setForm({ nome: item.nome, ordem: String(item.ordem) }); setModalOpen(true); };
+  const openEdit = (item: SerieData): void => { setEditItem(item); setForm({ nome: item.nome, ordem: String(item.ordem) }); setModalOpen(true); };
 
   const handleSave = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();

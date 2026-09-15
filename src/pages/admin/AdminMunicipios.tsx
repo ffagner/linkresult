@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Pencil, Trash2, Building2 } from 'lucide-react';
 import { listar, criar, atualizar, excluir } from '@/api/municipios';
+import type { MunicipioData } from '@/api/municipios';
 import AppLayout from '@/components/lr/AppLayout';
 import PageHeader from '@/components/lr/PageHeader';
 import DataTable from '@/components/lr/DataTable';
@@ -19,13 +20,13 @@ import { useToast } from '@/hooks/use-toast';
 export default function AdminMunicipios() {
   const { profile } = useAuth();
   const { toast } = useToast();
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<MunicipioData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [search, setSearch] = useState<string>('');
   const [modalOpen, setModalOpen] = useState<boolean>(false);
-  const [editItem, setEditItem] = useState<any>(null);
-  const [deleteItem, setDeleteItem] = useState<any>(null);
-  const [form, setForm] = useState<any>({ nome: '', estado: '' });
+  const [editItem, setEditItem] = useState<MunicipioData | null>(null);
+  const [deleteItem, setDeleteItem] = useState<MunicipioData | null>(null);
+  const [form, setForm] = useState<{ nome: string; estado: string }>({ nome: '', estado: '' });
   const [saving, setSaving] = useState<boolean>(false);
 
   useEffect(() => { listar().then(r => { setData(r); setLoading(false) }) }, []);
@@ -36,7 +37,7 @@ export default function AdminMunicipios() {
   );
 
   const openCreate = (): void => { setEditItem(null); setForm({ nome: '', estado: '' }); setModalOpen(true); };
-  const openEdit = (item: any): void => { setEditItem(item); setForm({ nome: item.nome, estado: item.estado }); setModalOpen(true); };
+  const openEdit = (item: MunicipioData): void => { setEditItem(item); setForm({ nome: item.nome, estado: item.estado }); setModalOpen(true); };
 
   const handleSave = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();

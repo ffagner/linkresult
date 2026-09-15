@@ -3,9 +3,18 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Trash2, ArrowLeft, Layers, CheckCircle2, AlertCircle, Link as LinkIcon } from 'lucide-react';
 import { criarEmLote } from '@/api/relatorios';
 import { listar as listarMunicipios } from '@/api/municipios';
+import type { MunicipioData } from '@/api/municipios';
 import { listar as listarAvaliacoes } from '@/api/avaliacoes';
+import type { AvaliacaoData } from '@/api/avaliacoes';
 import { listar as listarSeries } from '@/api/series';
+import type { SerieData } from '@/api/series';
 import { encryptLink } from '@/lib/crypto';
+
+interface LoteItem {
+  id: number
+  serieId: string
+  link: string
+}
 import AppLayout from '@/components/lr/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,12 +27,12 @@ export default function AdminRelatoriosLote() {
   const { profile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [municipios, setMunicipios] = useState<any[]>([]);
-  const [avaliacoes, setAvaliacoes] = useState<any[]>([]);
-  const [series, setSeries] = useState<any[]>([]);
+  const [municipios, setMunicipios] = useState<MunicipioData[]>([]);
+  const [avaliacoes, setAvaliacoes] = useState<AvaliacaoData[]>([]);
+  const [series, setSeries] = useState<SerieData[]>([]);
   const [municipioId, setMunicipioId] = useState<string>('');
   const [avaliacaoId, setAvaliacaoId] = useState<string>('');
-  const [items, setItems] = useState<any[]>([{ serieId: '', link: '', id: Date.now() }]);
+  const [items, setItems] = useState<LoteItem[]>([{ serieId: '', link: '', id: Date.now() }]);
   const [saving, setSaving] = useState<boolean>(false);
   const [saved, setSaved] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
@@ -41,8 +50,8 @@ export default function AdminRelatoriosLote() {
   }, []);
 
   const addItem = (): void => setItems(prev => [...prev, { serieId: '', link: '', id: Date.now() }]);
-  const removeItem = (id: any): void => setItems(prev => prev.filter(i => i.id !== id));
-  const updateItem = (id: any, field: any, value: any): void => setItems(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i));
+  const removeItem = (id: number): void => setItems(prev => prev.filter(i => i.id !== id));
+  const updateItem = (id: number, field: keyof Omit<LoteItem, 'id'>, value: string): void => setItems(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i));
 
   const handleSave = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
@@ -50,7 +59,7 @@ export default function AdminRelatoriosLote() {
     try {
       const mun = municipios.find(m => m.id === municipioId);
       const ava = avaliacoes.find(a => a.id === avaliacaoId);
-      const itens = await Promise.all(items.map(async (item: any) => {
+      const itens = await Promise.all(items.map(async (item) => {
         const ser = series.find(s => s.id === item.serieId);
         return {
           serieId: item.serieId,

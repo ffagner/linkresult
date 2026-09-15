@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Pencil, Filter, UserX, UserCheck } from 'lucide-react';
 import { listar, criar, atualizar, excluir } from '@/api/usuarios';
+import type { UsuarioData } from '@/api/usuarios';
 import { listar as listarMunicipios } from '@/api/municipios';
+import type { MunicipioData } from '@/api/municipios';
 import AppLayout from '@/components/lr/AppLayout';
 import PageHeader from '@/components/lr/PageHeader';
 import DataTable from '@/components/lr/DataTable';
@@ -19,15 +21,15 @@ import { useToast } from '@/hooks/use-toast';
 export default function AdminUsuarios() {
   const { profile } = useAuth();
   const { toast } = useToast();
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<UsuarioData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [municipios, setMunicipios] = useState<any[]>([]);
+  const [municipios, setMunicipios] = useState<MunicipioData[]>([]);
   const [search, setSearch] = useState<string>('');
   const [filterRole, setFilterRole] = useState<string>('todos');
   const [modalOpen, setModalOpen] = useState<boolean>(false);
-  const [editItem, setEditItem] = useState<any>(null);
-  const [toggleItem, setToggleItem] = useState<any>(null);
-  const [form, setForm] = useState<any>({ nome: '', email: '', senha: '', role: 'municipio', municipioId: '' });
+  const [editItem, setEditItem] = useState<UsuarioData | null>(null);
+  const [toggleItem, setToggleItem] = useState<UsuarioData | null>(null);
+  const [form, setForm] = useState<{ nome: string; email: string; senha: string; role: string; municipioId: string }>({ nome: '', email: '', senha: '', role: 'municipio', municipioId: '' });
   const [saving, setSaving] = useState<boolean>(false);
 
   useEffect(() => {
@@ -52,7 +54,7 @@ export default function AdminUsuarios() {
   };
 
   const openCreate = (): void => { setEditItem(null); setForm({ nome: '', email: '', senha: '', role: 'municipio', municipioId: '' }); setModalOpen(true); };
-  const openEdit = (u: any): void => { setEditItem(u); setForm({ nome: u.nome, email: u.email, senha: '', role: u.role, municipioId: u.municipioId || '' }); setModalOpen(true); };
+  const openEdit = (u: UsuarioData): void => { setEditItem(u); setForm({ nome: u.nome, email: u.email, senha: '', role: u.role, municipioId: u.municipioId || '' }); setModalOpen(true); };
 
   const handleSave = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
@@ -60,7 +62,7 @@ export default function AdminUsuarios() {
     try {
       const mun = municipios.find(m => m.id === form.municipioId);
       if (editItem) {
-        const updateData: any = { nome: form.nome, email: form.email, role: form.role, municipioId: form.municipioId || null, municipioNome: mun?.nome || null };
+        const updateData: Partial<UsuarioData> = { nome: form.nome, email: form.email, role: form.role, municipioId: form.municipioId || null, municipioNome: mun?.nome || null };
         await atualizar(editItem.uid, updateData);
         setData(prev => prev.map(u => u.uid === editItem.uid ? { ...u, ...updateData } : u));
         toast({ title: 'Usuário atualizado', variant: 'edit' });

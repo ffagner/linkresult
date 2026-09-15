@@ -6,14 +6,15 @@ import LoadingSpinner from '@/components/lr/LoadingSpinner';
 import StatusBadge from '@/components/lr/StatusBadge';
 import { useAuth } from '@/lib/AuthContext';
 import { buscar as buscarRelatorio } from '@/api/relatorios';
+import type { RelatorioData } from '@/api/relatorios';
 import { decryptLink } from '@/lib/crypto';
 
 export default function AdminReportViewer() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { profile } = useAuth();
   const [loading, setLoading] = useState<boolean>(true);
-  const [relatorio, setRelatorio] = useState<any>(null);
-  const [embedUrl, setEmbedUrl] = useState<any>(null);
+  const [relatorio, setRelatorio] = useState<RelatorioData | null>(null);
+  const [embedUrl, setEmbedUrl] = useState<string>('');
   const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Pencil, Trash2, Filter } from 'lucide-react';
 import { listar, criar, atualizar, excluir } from '@/api/avaliacoes';
+import type { AvaliacaoData } from '@/api/avaliacoes';
 import AppLayout from '@/components/lr/AppLayout';
 import PageHeader from '@/components/lr/PageHeader';
 import DataTable from '@/components/lr/DataTable';
@@ -18,14 +19,14 @@ import { useToast } from '@/hooks/use-toast';
 export default function AdminAvaliacoes() {
   const { profile } = useAuth();
   const { toast } = useToast();
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<AvaliacaoData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [search, setSearch] = useState<string>('');
   const [filterAno, setFilterAno] = useState<string>('todos');
   const [modalOpen, setModalOpen] = useState<boolean>(false);
-  const [editItem, setEditItem] = useState<any>(null);
-  const [deleteItem, setDeleteItem] = useState<any>(null);
-  const [form, setForm] = useState<any>({ nome: '', ano: '' });
+  const [editItem, setEditItem] = useState<AvaliacaoData | null>(null);
+  const [deleteItem, setDeleteItem] = useState<AvaliacaoData | null>(null);
+  const [form, setForm] = useState<{ nome: string; ano: string }>({ nome: '', ano: '' });
   const [saving, setSaving] = useState<boolean>(false);
 
   useEffect(() => { listar().then(r => { setData(r); setLoading(false) }) }, []);
@@ -46,7 +47,7 @@ export default function AdminAvaliacoes() {
   };
 
   const openCreate = (): void => { setEditItem(null); setForm({ nome: '', ano: '' }); setModalOpen(true); };
-  const openEdit = (item: any): void => { setEditItem(item); setForm({ nome: item.nome, ano: String(item.ano) }); setModalOpen(true); };
+  const openEdit = (item: AvaliacaoData): void => { setEditItem(item); setForm({ nome: item.nome, ano: String(item.ano) }); setModalOpen(true); };
 
   const handleSave = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();

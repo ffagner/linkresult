@@ -41,7 +41,7 @@ export default function AdminRelatorios() {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [editItem, setEditItem] = useState<RelatorioData | null>(null);
   const [deleteItem, setDeleteItem] = useState<RelatorioData | null>(null);
-  const [form, setForm] = useState<any>({ municipioId: '', avaliacaoId: '', serieId: '', link: '' });
+  const [form, setForm] = useState<{ municipioId: string; avaliacaoId: string; serieId: string; link: string }>({ municipioId: '', avaliacaoId: '', serieId: '', link: '' });
   const [saving, setSaving] = useState<boolean>(false);
 
   useEffect(() => {
