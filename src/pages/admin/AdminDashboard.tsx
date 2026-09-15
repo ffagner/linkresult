@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, ClipboardList, FileText, CheckCircle2, Plus, ArrowRight, Clock } from 'lucide-react';
+import { Building2, ClipboardList, FileText, CheckCircle2, Plus, ArrowRight, Clock, MapPin } from 'lucide-react';
 import { listar as listarMunicipios } from '@/api/municipios';
 import { listar as listarAvaliacoes } from '@/api/avaliacoes';
 import { listar as listarRelatorios } from '@/api/relatorios';
@@ -23,6 +23,7 @@ export default function AdminDashboard() {
   const { profile } = useAuth();
   const [stats, setStats] = useState<any>({ municipios: 0, avaliacoes: 0, liberados: 0, pendentes: 0 });
   const [recentes, setRecentes] = useState<any[]>([]);
+  const [porMunicipio, setPorMunicipio] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -33,6 +34,25 @@ export default function AdminDashboard() {
         pendentes: r.filter(x => !x.liberado).length,
       });
       setRecentes(r.slice(0, 6));
+
+      // Status de liberação por município — só entram os que têm relatórios
+      // cadastrados; ordenados com maior pendência primeiro para chamar atenção.
+      const resumo = m
+        .map(municipio => {
+          const doMunicipio = r.filter(x => x.municipioId === municipio.id);
+          const liberadosCount = doMunicipio.filter(x => x.liberado).length;
+          return {
+            id: municipio.id,
+            nome: municipio.nome,
+            total: doMunicipio.length,
+            liberados: liberadosCount,
+            pct: doMunicipio.length > 0 ? Math.round((liberadosCount / doMunicipio.length) * 100) : 0,
+          };
+        })
+        .filter(x => x.total > 0)
+        .sort((x, y) => x.pct - y.pct || y.total - x.total);
+      setPorMunicipio(resumo);
+
       setLoading(false);
     });
   }, []);
@@ -61,6 +81,36 @@ export default function AdminDashboard() {
           ))}
         </div>
       </div>
+
+      {porMunicipio.length > 0 && (
+        <div className="bg-card rounded-2xl border border-border overflow-hidden mb-6">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+            <h2 className="font-display font-semibold text-base">Liberação por município</h2>
+            <span className="text-xs text-muted-foreground">{porMunicipio.length} município(s) com relatórios</span>
+          </div>
+          <div className="divide-y divide-border">
+            {porMunicipio.map(m => (
+              <div key={m.id} className="flex items-center gap-4 px-5 py-3.5">
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <MapPin className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-3 mb-1.5">
+                    <span className="text-sm font-medium truncate">{m.nome}</span>
+                    <span className="text-xs text-muted-foreground flex-shrink-0">{m.liberados}/{m.total} liberados</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-1.5">
+                    <div
+                      className={`h-1.5 rounded-full transition-all ${m.pct === 100 ? 'bg-green-500' : m.pct === 0 ? 'bg-amber-400' : 'bg-primary'}`}
+                      style={{ width: `${m.pct}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="bg-card rounded-2xl border border-border overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">

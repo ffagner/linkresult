@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { auth, db } from '@/lib/firebase'
@@ -7,6 +7,8 @@ interface AuthContextValue {
   user: User | null
   profile: Record<string, any> | null
   loading: boolean
+  /** 'inativo' quando o próprio backend derrubou a sessão por status inativo. */
+  authError: 'inativo' | null
   logout: () => Promise<void>
 }
 
@@ -16,6 +18,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Record<string, any> | null>(null)
   const [loading, setLoading] = useState(true)
+  const [authError, setAuthError] = useState<'inativo' | null>(null)
+  // signOut(auth) reentra em onAuthStateChanged com firebaseUser=null antes do
+  // fim desta função — sem essa ref, o "setAuthError(null)" do próprio ciclo
+  // apagaria o motivo do logout forçado antes da tela de login conseguir lê-lo.
+  const forcedLogoutReasonRef = useRef<'inativo' | null>(null)
 
   useEffect(() => {
     let unsubscribeSnapshot: (() => void) | null = null
@@ -30,17 +37,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!firebaseUser) {
         setProfile(null)
+        setAuthError(forcedLogoutReasonRef.current)
+        forcedLogoutReasonRef.current = null
         setLoading(false)
         return
       }
 
+      // Novo ciclo de autenticação (novo login) — limpa erro de sessão anterior.
+      setAuthError(null)
+
       const userDocRef = doc(db, 'users', firebaseUser.uid)
       unsubscribeSnapshot = onSnapshot(userDocRef, (snapshot) => {
-        if (snapshot.exists()) {
-          setProfile({ uid: snapshot.id, ...snapshot.data() })
-        } else {
-          setProfile(null)
+        const data = snapshot.exists() ? snapshot.data() : null
+
+        if (data && data.status === 'inativo') {
+          // Conta desativada pelo admin — inclusive em tempo real, se o
+          // usuário já estava com o app aberto. Derruba a sessão.
+          forcedLogoutReasonRef.current = 'inativo'
+          signOut(auth)
+          return
         }
+
+        setProfile(data ? { uid: snapshot.id, ...data } : null)
         setLoading(false)
       })
     })
@@ -56,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, logout }}>
+    <AuthContext.Provider value={{ user, profile, loading, authError, logout }}>
       {children}
     </AuthContext.Provider>
   )

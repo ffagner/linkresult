@@ -22,13 +22,19 @@ export default function Login() {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
   const navigate = useNavigate()
-  const { user, profile, loading: authLoading } = useAuth()
+  const { user, profile, loading: authLoading, authError } = useAuth()
 
   useEffect(() => {
     if (!authLoading && user && profile) {
       navigate(roleHome[profile.role as string] || '/admin', { replace: true })
     }
   }, [user, profile, authLoading, navigate])
+
+  useEffect(() => {
+    if (authError === 'inativo') {
+      setError('Sua conta foi desativada. Entre em contato com o administrador do sistema.')
+    }
+  }, [authError])
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()

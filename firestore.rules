@@ -2,20 +2,30 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function userData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Usuários criados antes do campo `status` existir não têm a chave —
+    // tratamos a ausência como ativo, e só bloqueia quando for 'inativo'.
+    function isAtivo() {
+      return !('status' in userData()) || userData().status != 'inativo';
+    }
+
     function isAdmin() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return userData().role == 'admin' && isAtivo();
     }
 
     function isPedagogico() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'pedagogico';
+      return userData().role == 'pedagogico' && isAtivo();
     }
 
     function isMunicipio() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'municipio';
+      return userData().role == 'municipio' && isAtivo();
     }
 
     function getMunicipioId() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.municipioId;
+      return userData().municipioId;
     }
 
     match /municipios/{id} {

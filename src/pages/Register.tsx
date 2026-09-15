@@ -25,7 +25,7 @@ export default function Register() {
       const credential = await createUserWithEmailAndPassword(auth, email, senha);
       await setDoc(doc(db, "users", credential.user.uid), {
         nome, email, role: "municipio", municipioId: null,
-        createdAt: serverTimestamp(),
+        status: "ativo", createdAt: serverTimestamp(),
       });
       setSuccess(true);
     } catch (err) {
