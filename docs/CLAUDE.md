@@ -19,53 +19,79 @@ O sistema substitui o fluxo manual de geração de arquivos `.docx` e gerenciame
 
 ### Fluxo de Uso da Aplicação
 
-Ciclo de vida de um relatório, do cadastro ao acompanhamento — os três
-perfis entram em pontos diferentes desse mesmo fluxo, nunca de forma isolada:
+A lógica do sistema é uma esteira de aprovação em três etapas: **nada chega
+ao município sem passar pelas duas etapas anteriores**, e essa é a regra que
+explica praticamente toda decisão de produto do LinkResults.
 
-1. **Setup de base (Admin)** — antes de existir qualquer relatório, precisam
-   existir pelo menos um `município` (`/admin/municipios`), uma `avaliação`
-   (`/admin/avaliacoes`, ex.: "CADERNO 1") e uma `série` (`/admin/series`,
-   ex.: "5º ano"). São os três selects que compõem todo relatório.
-2. **Cadastro do relatório (Admin)** — em `/admin/relatorios` (um de cada
-   vez) ou `/admin/relatorios/lote` (mesmo município + avaliação + ano, várias
-   séries de uma vez — o caso comum de "chegou o resultado do CADERNO 1 de
-   todas as séries deste município"). O admin informa o **ano** de referência
-   (permite reusar "CADERNO 1" ano após ano sem recadastrar a avaliação) e
-   cola o link do Power BI, que é **encriptado no navegador antes de sair
-   para o Firestore** (`encryptLink`, seção 5). Nesse momento o relatório
-   existe mas `liberado: false` — ninguém do município o vê ainda.
-3. **Análise e liberação (Pedagógico)** — em `/pedagogico/relatorios`, o
-   pedagógico vê todos os relatórios cadastrados (liberados ou não), confere
-   o conteúdo via iframe (`/pedagogico/relatorio/:id`) e decide **Liberar**.
-   Isso grava `liberado: true` + `liberadoEm`/`liberadoPor` e — só na
-   **primeira** liberação daquele relatório — também `entregueEm` (a data
-   "oficial" de entrega, que **nunca** é apagada por uma revogação futura).
-   Cada ação (liberar/revogar/ajustar data) fica registrada em `historico`.
-   Se a entrega de fato aconteceu antes do clique (ex.: em reunião), o
-   pedagógico pode corrigir a data manualmente pelo botão de ajuste.
-4. **Consumo (Município)** — o usuário do município só enxerga relatórios
-   com `liberado: true` do seu próprio `municipioId` (garantido nas Security
-   Rules, não só no frontend). Em `/municipio`, eles aparecem agrupados por
-   avaliação + ano num accordion (só uma seção aberta por vez, a mais
-   recente por padrão). Ao clicar em "Ver Relatório", o link é descriptografado
-   em memória e injetado num iframe em tela cheia — o usuário nunca vê o link
-   real — e a abertura é registrada silenciosamente em `acessos` (não
-   bloqueia a visualização se essa escrita falhar).
-5. **Revogação, se necessário (Pedagógico)** — o mesmo botão de
-   liberar/revogar tira o relatório de circulação para o município a
-   qualquer momento (`liberado: false`), sem apagar `entregueEm` nem o
-   histórico — o registro de que a entrega aconteceu permanece.
-6. **Acompanhamento (Admin)** — o dashboard (`/admin`) mostra o status de
-   liberação por município e a data da última entrega; `/admin/analytics`
-   cruza isso com os acessos reais — quais municípios abrem o que foi
-   liberado, com que frequência, e quais relatórios liberados **nunca**
-   foram abertos (o sinal mais acionável para a consultoria entrar em
-   contato com o município).
-7. **Gestão de usuários (Admin)** — em paralelo a tudo isso, o admin cria as
-   contas de cada perfil em `/admin/usuarios` (o usuário `municipio` é
-   vinculado a um `municipioId` no cadastro) e pode desativar uma conta a
-   qualquer momento — o efeito é imediato, inclusive para quem já está
-   logado (a sessão cai sozinha, seção 4/6).
+**1. Tudo começa com o Admin, montando a base.** A equipe da Tendência
+cadastra os municípios parceiros, os tipos de avaliação que existem (ex.:
+"CADERNO 1", "SAEB") e as séries escolares. Isso é só o vocabulário do
+sistema — o trabalho de verdade começa quando um resultado de fato chega.
+
+**2. O Admin cadastra o relatório, mas ele nasce escondido.** Quando o
+resultado de uma avaliação sai do Power BI, o Admin cola o link dentro do
+sistema, associando a um município, uma avaliação, uma série e o ano a que
+aquele resultado se refere (a mesma avaliação, tipo "CADERNO 1", se repete
+ano após ano, então o ano é o que diferencia um resultado do outro). O link
+nunca fica visível em texto puro em lugar nenhum — o sistema embaralha
+(encripta) ele no exato momento do cadastro. E o mais importante: nesse
+momento o relatório **ainda não existe para o município**. Só o Admin e o
+Pedagógico sabem que ele está ali. É por isso que existe um modo de cadastro
+"em lote" — quando chega o resultado de uma avaliação inteira, com várias
+séries de uma vez, o Admin não precisa repetir município/avaliação/ano a
+cada uma, só troca a série e o link.
+
+**3. O Pedagógico é o portão — nada passa sem o aval dele.** Essa etapa
+existe porque um resultado recém-saído do Power BI não deve ir direto para
+a secretaria municipal sem alguém da equipe técnica conferir antes. O
+Pedagógico entra, vê a lista de tudo que o Admin cadastrou (liberado ou não),
+abre cada relatório para analisar o conteúdo, e só então decide clicar em
+**"Liberar"**. É literalmente esse clique que publica o relatório — antes
+dele, para o município, o relatório simplesmente não existe; depois dele,
+aparece na hora.
+
+**4. A liberação vira o registro oficial de entrega — e ele é permanente.**
+No instante em que o Pedagógico libera um relatório pela primeira vez, o
+sistema grava a data em que isso aconteceu. Essa data é o equivalente digital
+de um protocolo de entrega — antes, isso era controlado manualmente (por
+isso o sistema até permite ao Pedagógico corrigir a data à mão, para os
+casos em que a entrega real aconteceu antes do clique, como numa reunião
+presencial). O ponto central é: **essa data de entrega nunca se perde**,
+mesmo que o Pedagógico decida revogar o acesso depois por algum motivo — o
+sistema sabe diferenciar "quando isso foi entregue pela primeira vez" de
+"se está acessível agora", e guarda as duas coisas separadamente.
+
+**5. Só agora o Município entra na história.** A secretaria municipal loga e
+vê exclusivamente os relatórios que foram liberados **para ela** — nunca os
+de outro município, e nunca os que ainda não passaram pelo aval do
+Pedagógico. Os relatórios aparecem organizados por avaliação e ano, com o
+mais recente já aberto para consulta rápida e os anteriores recolhidos, para
+não virar uma lista infinita conforme os anos passam. Ao clicar para ver um
+relatório, o usuário nunca enxerga o link real do Power BI — o sistema abre
+o conteúdo dentro de uma tela própria do LinkResults, como se fosse um
+"cofre" que mostra o conteúdo sem entregar a chave.
+
+**6. O Pedagógico pode revogar a qualquer momento — mas o histórico não
+esquece.** Se depois de liberado alguém encontrar um erro no relatório, o
+Pedagógico revoga com o mesmo botão, e ele some da tela do município
+imediatamente. Isso não apaga o fato de que ele já tinha sido entregue antes
+— só tira o acesso atual. Toda liberação, revogação e correção de data fica
+registrada num histórico, como um extrato de tudo que já aconteceu com
+aquele relatório.
+
+**7. O Admin acompanha tudo de cima, incluindo o que não aconteceu.** Além
+de ver quantos relatórios cada município já recebeu e quantos ainda estão
+represados esperando o Pedagógico, o Admin tem acesso a um painel que cruza
+a liberação com o uso real: quais municípios de fato abriram o que foi
+entregue, com que frequência, e — o dado mais valioso — **quais relatórios
+já liberados nunca foram abertos por ninguém**. É esse último sinal que
+justifica a consultoria ligar para um município: "vocês receberam esse
+resultado há duas semanas e ainda não olharam."
+
+Por trás de todo esse fluxo, o Admin também é quem cria e desativa as contas
+de cada perfil — inclusive a conta de cada município, já vinculada a ele
+desde a criação — e desativar alguém tem efeito imediato: se a pessoa já
+estiver com o sistema aberto, a sessão cai sozinha, na hora.
 
 ### Como o projeto foi concebido (histórico)
 
