@@ -7,6 +7,7 @@ import LoadingSpinner from '@/components/lr/LoadingSpinner';
 import ThemeToggle from '@/components/lr/ThemeToggle';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { listarPorMunicipio as listarRelatoriosPorMunicipio } from '@/api/relatorios';
 import type { RelatorioData } from '@/api/relatorios';
 import { formatarData } from '@/lib/date';
@@ -23,6 +24,9 @@ export default function MunicipioRelatorios() {
   const [filterSerie, setFilterSerie] = useState<string>('todos');
   const [filterAno, setFilterAno] = useState<string>('todos');
   const [search, setSearch] = useState<string>('');
+  // Só uma seção (avaliação + ano) aberta por vez — sem isso, a lista cresce
+  // sem controle conforme as edições/anos se acumulam.
+  const [openGroup, setOpenGroup] = useState<string>('');
 
   useEffect(() => {
     async function load() {
@@ -74,13 +78,26 @@ export default function MunicipioRelatorios() {
   };
 
   // Agrupa por avaliação + ano — sem o ano, "CADERNO 1" de anos diferentes
-  // apareceria misturado na mesma seção.
+  // apareceria misturado na mesma seção. Ordenado com o ano mais recente
+  // primeiro, já que é o que mais interessa por padrão.
   const grouped = filtered.reduce<Record<string, { avaliacaoNome: string; ano: number; items: RelatorioData[] }>>((acc, r) => {
     const key = `${r.avaliacaoId}-${r.ano}`;
     if (!acc[key]) acc[key] = { avaliacaoNome: r.avaliacaoNome, ano: r.ano, items: [] };
     acc[key].items.push(r);
     return acc;
   }, {});
+  const sortedGroups = Object.entries(grouped)
+    .map(([key, group]) => ({ key, ...group }))
+    .sort((a, b) => b.ano - a.ano || a.avaliacaoNome.localeCompare(b.avaliacaoNome));
+
+  // Abre a seção mais recente por padrão assim que os dados chegam (ou
+  // quando a seção aberta some por causa de um filtro) — sem isso o
+  // usuário cairia numa tela com tudo recolhido.
+  useEffect(() => {
+    if (sortedGroups.length > 0 && !sortedGroups.some(g => g.key === openGroup)) {
+      setOpenGroup(sortedGroups[0].key);
+    }
+  }, [sortedGroups.map(g => g.key).join('|')]);
 
   if (loading) return (
     <div className="min-h-screen bg-background flex items-center justify-center">
@@ -188,49 +205,50 @@ export default function MunicipioRelatorios() {
               : 'Ainda não há relatórios liberados para o seu município. Entre em contato com a equipe pedagógica.'}
           />
         ) : (
-          <div className="space-y-6 animate-fade-in">
-            {Object.values(grouped)
-              .sort((a, b) => b.ano - a.ano || a.avaliacaoNome.localeCompare(b.avaliacaoNome))
-              .map(group => (
-              <div key={`${group.avaliacaoNome}-${group.ano}`}>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="h-px flex-1 bg-border" />
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2">
+          <Accordion type="single" collapsible value={openGroup} onValueChange={setOpenGroup} className="space-y-3 animate-fade-in">
+            {sortedGroups.map(group => (
+              <AccordionItem key={group.key} value={group.key} className="border border-border rounded-2xl bg-card overflow-hidden border-b-0">
+                <AccordionTrigger className="px-4 py-3.5 hover:no-underline hover:bg-muted/40 data-[state=open]:border-b data-[state=open]:border-border">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {group.avaliacaoNome} · {group.ano}
+                    <span className="ml-2 text-muted-foreground/60 normal-case font-normal">
+                      {group.items.length} {group.items.length === 1 ? 'relatório' : 'relatórios'}
+                    </span>
                   </span>
-                  <div className="h-px flex-1 bg-border" />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {group.items.map(r => (
-                    <Link
-                      key={r.id}
-                      to={`/municipio/relatorio/${r.id}`}
-                      className="group bg-card rounded-2xl border border-border p-4 hover:shadow-md hover:border-primary/30 transition-all duration-200"
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors flex items-center justify-center">
-                          <BarChart3 className="w-5 h-5 text-primary" />
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4 pt-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {group.items.map(r => (
+                      <Link
+                        key={r.id}
+                        to={`/municipio/relatorio/${r.id}`}
+                        className="group bg-background rounded-2xl border border-border p-4 hover:shadow-md hover:border-primary/30 transition-all duration-200"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="w-10 h-10 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors flex items-center justify-center">
+                            <BarChart3 className="w-5 h-5 text-primary" />
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 dark:bg-green-500/10 dark:text-green-400 px-2 py-0.5 rounded-full">
+                            <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                            Disponível
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                          <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                          Disponível
+                        <h3 className="font-semibold text-sm mb-0.5">{r.serieNome}</h3>
+                        <p className="text-xs text-muted-foreground mb-1">{r.avaliacaoNome}</p>
+                        {r.entregueEm && (
+                          <p className="text-xs text-muted-foreground/70 mb-3">Disponível desde {formatarData(r.entregueEm)}</p>
+                        )}
+                        <div className="flex items-center gap-2 text-primary text-xs font-medium group-hover:gap-3 transition-all mt-3">
+                          <Play className="w-3.5 h-3.5" />
+                          Ver relatório
                         </div>
-                      </div>
-                      <h3 className="font-semibold text-sm mb-0.5">{r.serieNome}</h3>
-                      <p className="text-xs text-muted-foreground mb-1">{r.avaliacaoNome}</p>
-                      {r.entregueEm && (
-                        <p className="text-xs text-muted-foreground/70 mb-3">Disponível desde {formatarData(r.entregueEm)}</p>
-                      )}
-                      <div className="flex items-center gap-2 text-primary text-xs font-medium group-hover:gap-3 transition-all mt-3">
-                        <Play className="w-3.5 h-3.5" />
-                        Ver relatório
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
+                      </Link>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
+          </Accordion>
         )}
       </main>
     </div>

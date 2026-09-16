@@ -84,6 +84,21 @@ declare module '@/components/ui/breadcrumb' {
   export const BreadcrumbSeparator: React.FC<{ children?: ReactNode }>
 }
 
+declare module '@/components/ui/accordion' {
+  import { type ReactNode } from 'react'
+  export const Accordion: React.FC<{
+    type: 'single' | 'multiple'
+    collapsible?: boolean
+    value?: string
+    onValueChange?: (v: string) => void
+    className?: string
+    children: ReactNode
+  }>
+  export const AccordionItem: React.FC<{ value: string; className?: string; children: ReactNode }>
+  export const AccordionTrigger: React.FC<{ className?: string; children: ReactNode }>
+  export const AccordionContent: React.FC<{ className?: string; children: ReactNode }>
+}
+
 declare module '@/components/ui/scroll-area' {
   import { type ReactNode } from 'react'
   export const ScrollArea: React.FC<{ className?: string; children: ReactNode }>
