@@ -17,31 +17,72 @@ O sistema substitui o fluxo manual de geração de arquivos `.docx` e gerenciame
 - Controle de liberação de relatórios pelo pedagógico antes de disponibilizar ao município
 - Ocultação dos links reais do Power BI dos usuários municipais
 
+### Como o projeto foi concebido (histórico)
+
+Vale registrar porque explica divergências que, de outra forma, pareceriam
+erro de documentação:
+
+1. **Plano original** (`docs/prompt-inicial-linkresults.md`): app do zero em
+   React + TS + Vite, **Tailwind v4** (`@tailwindcss/vite`, sem
+   `tailwind.config.js`) e arquitetura **Feature-Sliced Design**
+   (`features/`, `entities/`, `shared/`). Os primeiros commits seguiram esse
+   plano à risca — scaffold em Tailwind v4, camada `shared/` com tipos e
+   infraestrutura FSD.
+2. **Essa primeira tentativa foi abandonada.** Um commit posterior
+   (`f4945ea chore: remove all frontend code, keep only Firebase config and
+   docs`) apagou todo o frontend construído, mantendo só a config do Firebase
+   e a documentação.
+3. **A UI real veio de outro caminho**: um export de app gerado pelo
+   **Base44** (ferramenta no-code/IA) foi importado inteiro no lugar —
+   estrutura **flat** (`api/`, `components/`, `pages/`, `lib/`, não FSD),
+   `src/api/base44Client.js` como SDK próprio, ainda em JSX, seguindo um
+   sistema de design chamado internamente "Stitch". Commits seguintes
+   removeram as referências ao Base44 e plugaram Firebase Auth/Firestore
+   diretamente nessa UI já existente, em vez de reescrevê-la.
+4. Depois disso: migração completa de JS para TypeScript (99 arquivos
+   renomeados), tipagem explícita adicionada a componentes/hooks/API, e daí
+   em diante o desenvolvimento seguiu por sessões de agente de IA — as fases
+   do MVP (seção 10) e, depois de pronto, as melhorias e features descritas
+   em `docs/PLANO-MELHORIAS.md` e `docs/PLANO-ANALYTICS.md`.
+
+**Consequência prática:** a stack e a arquitetura *reais* (seção 2) são as
+do export Base44 migrado, não as do plano original — **Tailwind v3**, estrutura
+flat, tsconfig não-estrito. Não "corrigir" o projeto de volta para FSD/v4 achando
+que está desviado do plano; o plano é que ficou obsoleto.
+
 ---
 
 ## 2. Stack Tecnológica
 
 | Camada | Tecnologia |
 |---|---|
-| Frontend | React + TypeScript + Vite |
-| Estilização | Tailwind CSS v4 (plugin oficial `@tailwindcss/vite`) |
+| Frontend | React 18 + TypeScript + Vite 6 |
+| Estilização | Tailwind CSS **v3** + shadcn/ui (Radix) + Lucide React |
+| Tema | `next-themes` — claro/escuro com toggle persistente (`ThemeToggle`) |
 | Autenticação | Firebase Auth |
 | Banco de dados | Firebase Firestore |
 | Hospedagem | Firebase Hosting (plano Spark — gratuito) |
 | Visualização de relatórios | Iframe embutido (Opção C — página intermediária) |
 | Encriptação dos links | Web Crypto API (nativa do browser) |
+| Datas | `date-fns` (locale `ptBR`) — ver `src/lib/date.ts` |
 
 > ⚠️ O projeto utiliza exclusivamente o **plano Spark (gratuito)** do Firebase.
 > **Não usar Cloud Functions** — nenhuma funcionalidade deve depender delas.
 
+> ⚠️ **É Tailwind v3, não v4** (`tailwind.config.js` na raiz, `darkMode:
+> ["class"]`, tema em CSS vars). Versões anteriores deste documento afirmavam
+> v4 — informação errada, nunca foi verdade neste projeto. Não rode `npx
+> tailwindcss init` (recriaria a config e apagaria os tokens de tema
+> existentes) nem tente migrar para `@tailwindcss/vite`.
+
 ### Convenções de código
-- Arquitetura: **Feature-Sliced Design (FSD)**
+- **Arquitetura: flat, não FSD.** `src/api/` (camada Firestore, uma função `fromFirestore` por entidade), `src/pages/{admin,pedagogico,municipio}/`, `src/components/{ui,lr}/` (`ui/` = shadcn boilerplate `@ts-nocheck`, `lr/` = componentes próprios do LinkResults), `src/lib/` (contextos, utilitários, `crypto.ts`, `date.ts`, `firebase.ts`). Não criar `src/features/`, `src/entities/` ou `src/shared/` — versões anteriores deste documento descreviam FSD; nunca foi isso que se construiu.
 - Componentes: funcionais com hooks
-- Tipagem: estrita (`strict: true` no tsconfig)
+- **Tipagem: `strict: false` e `noImplicitAny: false` no tsconfig — não é estrita.** Parâmetros de função (ex.: `render: (r) => ...` em colunas de tabela) costumam ficar com tipo implícito; isso é aceito e usado deliberadamente em várias telas. Ainda assim, **entidades de domínio são sempre tipadas explicitamente** (`RelatorioData`, `MunicipioData`, `UserProfile`, etc., exportadas de `src/api/*.ts`) — a leniência do tsconfig não é licença para `any` explícito fora de `components/ui/`.
 - Variáveis de ambiente: prefixo `VITE_`
-- Sem `any` — sempre tipar explicitamente
-- **Tailwind v4**: usar o plugin `@tailwindcss/vite` + `@import "tailwindcss";` no CSS. **NÃO** existe `tailwind.config.js` por padrão no v4, nem o comando `npx tailwindcss init` (fluxo v3, descontinuado). Customizações via CSS (`@theme`).
-- **Datas**: os tipos do domínio usam `Date` nativo. A conversão `Timestamp → Date` (Firestore) acontece exclusivamente na camada de mapeamento (`api/`) de cada entidade — nunca espalhar `Timestamp` do Firebase pelo restante da aplicação.
+- Sem `any` explícito fora de `src/components/ui/` (shadcn, `@ts-nocheck`) — ver `docs/PLANO-MELHORIAS.md` item 4
+- **Datas**: os tipos do domínio usam `Date` nativo. A conversão `Timestamp → Date` (Firestore) acontece exclusivamente na camada de mapeamento (`api/`) de cada entidade — nunca espalhar `Timestamp` do Firebase pelo restante da aplicação. Formatação para exibição via `formatarData`/`formatarDataHora` de `src/lib/date.ts` (nunca `toLocaleDateString` solto nem string ISO crua na tela).
+- Scripts: `npm run dev|build|lint|typecheck|preview` (sem `test` configurado)
 
 ---
 
@@ -49,20 +90,24 @@ O sistema substitui o fluxo manual de geração de arquivos `.docx` e gerenciame
 
 ### 3.1 Admin
 - Representa a equipe da Tendência Consultoria Educacional
-- **Pode:** cadastrar, editar, excluir e atualizar municípios, avaliações, séries e links
-- **Pode:** gerenciar usuários de todos os perfis
+- **Pode:** cadastrar, editar, excluir municípios, avaliações, séries e relatórios (individualmente ou em lote — `/admin/relatorios/lote`)
+- **Pode:** gerenciar usuários de todos os perfis, inclusive **desativar** (`status: 'inativo'` — derruba a sessão em tempo real, mesmo com token válido; ver seção 4/6)
 - **Vê:** todos os dados do sistema, incluindo links descriptografados
+- **Vê:** `/admin/analytics` — quais municípios abrem os relatórios liberados e com que frequência (ver seção 4, coleção `acessos`)
+- **Vê:** painel de liberação por município e de última entrega no dashboard (`/admin`)
 
 ### 3.2 Pedagógico
 - Técnico responsável pela análise dos relatórios
 - **Pode:** visualizar todos os relatórios cadastrados pelo Admin
 - **Pode:** liberar ou revogar o acesso de um relatório para o município
+- **Pode:** ajustar manualmente a data de entrega de um relatório já liberado (ex.: entrega feita em ofício antes do clique no sistema)
 - **Pode:** visualizar os relatórios via iframe
 - **Não pode:** cadastrar, editar ou excluir dados
 
 ### 3.3 Município
 - Secretaria ou gestor municipal
-- **Pode:** visualizar apenas os relatórios **liberados** para o seu município
+- **Pode:** visualizar apenas os relatórios **liberados** para o seu município, agrupados por avaliação + ano (accordion, uma seção aberta por vez)
+- **Pode:** criar (nunca ler) registros em `acessos` — é a única escrita que este perfil tem no sistema, disparada automaticamente ao abrir um relatório
 - **Vê:** botão "Ver Relatório" que abre página intermediária com iframe do Power BI
 - **Não vê:** o link real do Power BI em nenhum momento
 - Cada município possui login próprio e acesso isolado via Security Rules
@@ -73,7 +118,7 @@ O sistema substitui o fluxo manual de geração de arquivos `.docx` e gerenciame
 
 ### Estrutura de coleções (flat — sem subcoleções)
 
-> **Nota sobre datas:** os campos `timestamp` abaixo são `Timestamp` do Firestore no banco, mas são convertidos para `Date` nativo na camada de mapeamento (`api/`) antes de chegarem ao domínio. Os tipos TypeScript (seção do prompt / `shared/types`) usam `Date`.
+> **Nota sobre datas:** os campos `timestamp` abaixo são `Timestamp` do Firestore no banco, mas são convertidos para `Date` nativo na camada de mapeamento (`api/`) antes de chegarem ao domínio. Os tipos TypeScript (interfaces `*Data` exportadas de `src/api/*.ts`) usam `Date`.
 
 #### Coleção: `municipios`
 ```
@@ -173,7 +218,7 @@ Os links do Power BI são encriptados antes de serem salvos no Firestore, usando
 ### Algoritmo: AES-GCM (256 bits)
 
 ```typescript
-// src/shared/lib/crypto.ts
+// src/lib/crypto.ts
 
 const CRYPTO_KEY = import.meta.env.VITE_CRYPTO_KEY // base64 de 32 bytes
 
@@ -252,28 +297,43 @@ Invariantes que vale ter em mente ao mexer nas regras:
 
 ## 7. Fluxo de Navegação
 
+Rotas reais em `src/App.tsx` (única fonte da verdade — abaixo é um espelho, se
+divergir confie no arquivo):
+
 ```
-/login                        → Tela de login (todos os perfis)
+/                          → Home: redireciona por role
+/login                     → Login (todos os perfis)
+/recuperar-senha           → Recuperação de senha
+/acesso-negado             → 403
+/perfil                    → Meu Perfil (todos os perfis autenticados)
 
-/admin
-  /admin/municipios           → CRUD de municípios
-  /admin/avaliacoes           → CRUD de avaliações
-  /admin/series               → CRUD de séries
-  /admin/relatorios           → CRUD de relatórios (cadastro de links)
-  /admin/usuarios             → Gerenciamento de usuários
+/admin                     → Dashboard (stats, liberação por município, última entrega)
+  /admin/municipios        → CRUD de municípios
+  /admin/avaliacoes        → CRUD de avaliações
+  /admin/series            → CRUD de séries
+  /admin/relatorios        → CRUD de relatórios (cadastro de links)
+  /admin/relatorios/lote   → Cadastro em lote (1 município + avaliação + ano → N séries)
+  /admin/relatorio/:id     → Visualização do relatório (iframe)
+  /admin/analytics         → Uso dos relatórios pelos municípios (coleção acessos)
+  /admin/usuarios          → Gerenciamento de usuários (criar/editar/desativar)
 
-/pedagogico
-  /pedagogico/relatorios      → Lista de relatórios com botão "Liberar / Revogar"
+/pedagogico                → Dashboard
+  /pedagogico/relatorios      → Lista com "Liberar/Revogar" e "Ajustar data de entrega"
   /pedagogico/relatorio/:id   → Visualização do relatório (iframe)
 
-/municipio
-  /municipio/relatorios       → Lista de relatórios liberados para o município
-  /municipio/relatorio/:id    → Página intermediária com iframe do Power BI
+/municipio                  → Lista de relatórios liberados (accordion por avaliação+ano)
+  /municipio/relatorio/:id  → Página intermediária com iframe do Power BI
+
+*                          → 404
 ```
+
+Todas as rotas (exceto `/`, `/login`, `/recuperar-senha`, `/acesso-negado`) são
+carregadas via `React.lazy` — cada perfil só baixa o código das suas próprias
+telas (ver `docs/PLANO-MELHORIAS.md` item 3).
 
 ### Redirecionamento por role
 - Após login, o sistema lê o `role` do documento `users/{uid}` e redireciona para a rota correta
-- Rotas protegidas por `PrivateRoute` que verifica autenticação + role
+- Rotas protegidas por `ProtectedRoute` (`src/components/ProtectedRoute.tsx`), que verifica autenticação + role + `status !== 'inativo'`
 
 ---
 
@@ -297,38 +357,59 @@ Quando o usuário clica em "Ver Relatório":
 
 ## 9. Funcionalidades por Perfil
 
+> Todos os itens abaixo estão implementados. Checklist mantida como mapa de
+> features, não como plano — para o que veio depois do MVP, com raciocínio e
+> armadilhas de cada decisão, ver `docs/PLANO-MELHORIAS.md` e
+> `docs/PLANO-ANALYTICS.md`.
+
 ### Admin
-- [ ] Login / logout
-- [ ] CRUD de Municípios (nome, estado)
-- [ ] CRUD de Avaliações (nome, ano)
-- [ ] CRUD de Séries (nome, ordem)
-- [ ] CRUD de Relatórios (associar município + avaliação + série + link)
-- [ ] Cadastro em lote (mesmo município + avaliação, múltiplas séries)
-- [ ] Gerenciamento de usuários (criar, editar, desativar)
-- [ ] Painel de status de liberação por município
+- [x] Login / logout
+- [x] CRUD de Municípios (nome, estado)
+- [x] CRUD de Avaliações (nome, ano)
+- [x] CRUD de Séries (nome, ordem)
+- [x] CRUD de Relatórios (município + avaliação + série + **ano** + link)
+- [x] Cadastro em lote (mesmo município + avaliação + ano, múltiplas séries)
+- [x] Gerenciamento de usuários (criar, editar, desativar — bloqueio reforçado nas rules)
+- [x] Painel de status de liberação por município + última entrega (dashboard)
+- [x] Analytics de uso dos relatórios pelos municípios (`/admin/analytics`)
+- [x] Filtro por município executado server-side (não traz a coleção inteira)
 
 ### Pedagógico
-- [ ] Login / logout
-- [ ] Listagem de relatórios com filtros (município, avaliação, série, status)
-- [ ] Visualização do relatório via iframe
-- [ ] Liberar relatório para o município
-- [ ] Revogar acesso ao relatório
+- [x] Login / logout
+- [x] Listagem de relatórios com filtros (município, avaliação, série, ano, status)
+- [x] Visualização do relatório via iframe
+- [x] Liberar relatório para o município
+- [x] Revogar acesso ao relatório
+- [x] Data de entrega registrada automaticamente na 1ª liberação (nunca apagada ao revogar) + ajuste manual
+- [x] Histórico auditável de liberações/revogações/ajustes por relatório
 
 ### Município
-- [ ] Login / logout
-- [ ] Listagem de relatórios liberados (filtrados por avaliação e série)
-- [ ] Visualização via página intermediária com iframe
-- [ ] Sem acesso ao link real em nenhum momento
+- [x] Login / logout
+- [x] Listagem de relatórios liberados (filtros por avaliação, série e ano; agrupados em accordion)
+- [x] Visualização via página intermediária com iframe
+- [x] Sem acesso ao link real em nenhum momento
+- [x] Registro (silencioso) de abertura de relatório para analytics do Admin
+
+### Transversal
+- [x] Tema claro/escuro com toggle persistente (`next-themes`)
+- [x] Responsividade mobile em todas as telas (tabelas viram cards)
 
 ---
 
-## 10. Prioridades de Desenvolvimento (MVP)
+## 10. Prioridades de Desenvolvimento (MVP) — histórico
+
+> Todas as 5 fases abaixo estão concluídas. Mantidas como registro da ordem em
+> que o projeto foi construído. O trabalho pós-MVP está em
+> `docs/PLANO-MELHORIAS.md` (datas em BR, data de entrega + histórico, code
+> splitting, remoção de `any`, filtro server-side) e `docs/PLANO-ANALYTICS.md`
+> (coleção `acessos`); tema dark, campo Ano em relatórios e o accordion do
+> Município foram feitos fora desses planos, direto em conversa.
 
 **Fase 1 — Base**
 1. Setup do projeto (Vite + React + TS + Tailwind + Firebase)
 2. Configuração do Firebase Auth + Firestore + Hosting
 3. Coleção `users` com roles e redirecionamento por perfil
-4. Utilitário de encriptação/descriptografia (`src/shared/lib/crypto.ts`)
+4. Utilitário de encriptação/descriptografia (`src/lib/crypto.ts`)
 
 **Fase 2 — Admin**
 5. CRUD de Municípios
@@ -359,15 +440,14 @@ Quando o usuário clica em "Ver Relatório":
 - **Sempre** verificar o `role` antes de renderizar rotas e componentes
 - **Sempre** usar Firebase Security Rules como primeira linha de defesa — nunca confiar apenas no frontend
 - **Nunca** usar Cloud Functions — o projeto usa o plano Spark (gratuito)
-- **Nunca** usar `any` no TypeScript
-- **Sempre** criar tipos explícitos para entidades (`Municipio`, `Avaliacao`, `Serie`, `Relatorio`, `UserProfile`)
-- **Sempre** converter `Timestamp → Date` na camada `api/` de cada entidade (função de mapeamento `fromFirestore`); o domínio nunca recebe `Timestamp`
-- **Tailwind v4**: nunca rodar `npx tailwindcss init` nem criar `tailwind.config.js` — usar o plugin `@tailwindcss/vite` e `@import "tailwindcss";` no CSS
-- Seguir a estrutura FSD: `src/features/`, `src/entities/`, `src/shared/`, `src/pages/`
-- Componentes de UI reutilizáveis ficam em `src/shared/ui/`
-- Cada feature tem sua própria pasta com `api/`, `model/`, `ui/`
-- O utilitário de crypto fica em `src/shared/lib/crypto.ts`
-- Ao criar Security Rules, sempre testar com o Firebase Emulator
+- **Nunca** usar `any` explícito fora de `src/components/ui/`
+- **Sempre** criar tipos explícitos para entidades (`MunicipioData`, `AvaliacaoData`, `SerieData`, `RelatorioData`, `UsuarioData`, `AcessoData`, `UserProfile` — todas exportadas de `src/api/*.ts` ou `src/lib/AuthContext.tsx`)
+- **Sempre** converter `Timestamp → Date` na camada `api/` de cada entidade (função de mapeamento `fromFirestore`); o domínio nunca recebe `Timestamp`. Exceção documentada: entradas de `historico` em `relatorios` usam `Timestamp.now()` no cliente, não `serverTimestamp()`, porque o Firestore rejeita `serverTimestamp()` dentro de arrays — ver seção 4
+- **É Tailwind v3**, não v4 — `tailwind.config.js` existe e é o lugar certo para customizar tema; não rodar `npx tailwindcss init` (reescreveria a config) nem migrar para `@tailwindcss/vite`
+- **A arquitetura é flat, não FSD** — não criar `src/features/`, `src/entities/` ou `src/shared/`. Seguir o que já existe: `src/api/` (Firestore), `src/pages/{admin,pedagogico,municipio}/`, `src/components/lr/` (componentes próprios), `src/components/ui/` (shadcn, não editar levianamente — é `@ts-nocheck`), `src/lib/` (contextos, utilitários, `crypto.ts`, `date.ts`)
+- Datas na tela sempre via `formatarData`/`formatarDataHora` de `src/lib/date.ts`
+- Ao criar Security Rules, sempre testar com o Firebase Emulator antes de deployar; deploy é `npx firebase deploy --only firestore:rules` (e `firestore:indexes` se mexer em índice) — passo manual, separado de salvar o arquivo
+- Antes de propor uma mudança estrutural grande (nova coleção, nova rota, novo padrão de dados), ler `docs/PLANO-MELHORIAS.md` e `docs/PLANO-ANALYTICS.md` — é provável que a decisão e o porquê dela já estejam registrados ali
 
 ---
 
